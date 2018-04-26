@@ -28,7 +28,15 @@ class Track {
     }
 }
 
+class Album {
+    constructor(title, artist) {
+        this.title = title;
+        this.artist = artist;
+    }
+}
+
 module.exports = {
     TaxRate,
-    Track
+    Track,
+    Album
 };

@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 
 const svc = require('../services');
 
@@ -22,13 +22,13 @@ const calculateTaxes = (req, res) => {
     });
 };
 
-const getTracks = (req, res) => {
+const getTracks = async (req, res) => {
     const genre = req.params.genre;
     const category = req.params.category;
     const url = urls.traxsource[genre][category];
-    svc.scrapeTracks(url, () => {
-        res.send(url);
-    });
+    const response = await svc.scrapTracks(url);
+    console.log(response);
+    res.send(response);
 };
 
 const urls = {

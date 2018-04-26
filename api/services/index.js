@@ -1,6 +1,7 @@
 'use strict';
 
 const http = require('http');
+const axios = require('axios');
 const cheerio = require('cheerio');
 const TaxRate = require('../models').TaxRate;
 
@@ -20,9 +21,32 @@ const scrapeTaxRates = (state, url, cb) => {
     });
 };
 
-const scrapeTracks = (url, cb) => {
-    cb();
+const scrapTracks = async (url) => {
+    try {
+        const response = await axios.get(url);
+        const scraper = new Scraper();
+        return scraper.scrap(response.data);
+    } catch (error) {
+        return error;
+    }
 };
+
+class Scraper {
+    constructor() {
+    }
+
+    scrap(html) {
+        const $ = cheerio.load(html);
+        let albums = [];
+        $('.links.ellip').each((idx, el) => {
+            albums.push({
+                title: $(el).first().text(),
+                album: $(el).text()
+            });
+        });
+        return albums;
+    }
+}
 
 class Parser {
     constructor(state) {
@@ -61,5 +85,5 @@ class Parser {
 
 module.exports = {
     scrapeTaxRates,
-    scrapeTracks
+    scrapTracks
 };
