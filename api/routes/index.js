@@ -13,6 +13,9 @@ module.exports = (app) => {
     app.route('/:provider/:genre/:category')
         .get(mainCtrl.getMusic);
 
+    app.route('/spotify')
+        .get(mainCtrl.getArtistAlbums);
+
     app.use((req, res) => {
         res.status(404)
             .send({url: `sorry friend, but url ${req.originalUrl} is not found`});

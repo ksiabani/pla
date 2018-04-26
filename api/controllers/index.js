@@ -1,4 +1,4 @@
- 'use strict';
+'use strict';
 
 const svc = require('../services');
 
@@ -8,6 +8,11 @@ const getMusic = async (req, res) => {
     const provider = req.params.provider;
     const url = urls[provider][genre][category];
     const response = await svc.scrapMusic(provider, category, url);
+    res.send(response);
+};
+
+const getArtistAlbums = async (req, res) => {
+    const response = await svc.spotifyApi.getArtistAlbums();
     res.send(response);
 };
 
@@ -25,5 +30,6 @@ const urls = {
 };
 
 module.exports = {
-    getMusic
+    getMusic,
+    getArtistAlbums
 };

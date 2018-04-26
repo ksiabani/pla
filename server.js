@@ -10,3 +10,7 @@ routes(app);
 app.listen(port);
 
 console.log("Node application running on port " + port);
+
+// https://github.com/thelinmichael/spotify-web-api-node
+// https://www.npmjs.com/package/passport-spotify
+// https://www.npmjs.com/package/spotify-uri
