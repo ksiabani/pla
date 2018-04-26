@@ -2,32 +2,12 @@
 
 const svc = require('../services');
 
-const getTaxRate = (req, res) => {
-    const state = req.params.stateName;
-    svc.scrapeTaxRates(state, stateUrls[state.toLowerCase()], (rates) => {
-        const rate = rates.find(rate => {
-            return rate.city.toLowerCase() === req.params.cityName.toLowerCase();
-        });
-        res.send(rate);
-    });
-};
-
-const calculateTaxes = (req, res) => {
-    const state = req.params.stateName;
-    svc.scrapeTaxRates(state, stateUrls[state.toLowerCase()], (rates) => {
-        const rate = rates.find(rate => {
-            return rate.city.toLowerCase() === req.params.cityName.toLowerCase();
-        });
-        res.send(rate.calculateTax(parseFloat(req.params.amount)));
-    });
-};
-
-const getTracks = async (req, res) => {
+const getMusic = async (req, res) => {
     const genre = req.params.genre;
     const category = req.params.category;
-    const url = urls.traxsource[genre][category];
-    const response = await svc.scrapTracks(url);
-    console.log(response);
+    const provider = req.params.provider;
+    const url = urls[provider][genre][category];
+    const response = await svc.scrapMusic(provider, category, url);
     res.send(response);
 };
 
@@ -44,13 +24,6 @@ const urls = {
     }
 };
 
-const stateUrls = {
-    nebraska: 'http://www.revenue.nebraska.gov/question/sales.html'
-};
-
 module.exports = {
-    getTaxRate,
-    calculateTaxes,
-    stateUrls,
-    getTracks
+    getMusic
 };
