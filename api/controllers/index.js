@@ -12,8 +12,12 @@ const getMusic = async (req, res) => {
 };
 
 const getArtistAlbums = async (req, res) => {
-    const response = await svc.spotifyApi.getArtistAlbums();
-    res.send(response);
+    try {
+        const response = await svc.spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE');
+        res.send(response.body);
+    } catch(error) {
+        res.send(error.message);
+    }
 };
 
 const urls = {

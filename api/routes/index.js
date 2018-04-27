@@ -1,6 +1,7 @@
 'use strict';
 
 const mainCtrl = require('../controllers');
+const passport = require('passport');
 
 module.exports = (app) => {
 
@@ -15,6 +16,11 @@ module.exports = (app) => {
 
     app.route('/spotify')
         .get(mainCtrl.getArtistAlbums);
+
+    app.get('/spotify/auth',
+        passport.authenticate('spotify', {scope: ['user-read-email', 'user-read-private'], showDialog: true}),
+        function (req, res) {
+        });
 
     app.use((req, res) => {
         res.status(404)
