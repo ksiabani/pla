@@ -106,37 +106,37 @@ app.use(passport.session());
 //         res.redirect('/');
 //     });
 
-app.get('/', function(req, res){
-    // res.render('index.html', { user: req.user });
-    res.send({ user: req.user });
-});
+// app.get('/', function(req, res){
+//     // res.render('index.html', { user: req.user });
+//     res.send({ user: req.user });
+// });
 
-app.get('/account', ensureAuthenticated, function(req, res){
-    // res.render('account.html', { user: req.user });
-    res.send({ user: req.user });
-});
-
-app.get('/login', function(req, res){
-    // res.render('login.html', { user: req.user });
-    res.send('Sorry friend, you must be logged in to do that.');
-});
-
-app.get('/auth/spotify',
-    passport.authenticate('spotify', {
-        scope: ['user-read-email', 'user-read-private']
-    }),
-    function (req, res) {
-    });
-
-app.get('/auth/spotify/callback',
-    passport.authenticate('spotify', { failureRedirect: '/login' }),
-    function(req, res) {
-        res.redirect('/');
-    });
-
-app.get('/:provider/:genre/:category', ensureAuthenticated, function(req, res){
-    res.send({ user: req.user });
-});
+// app.get('/account', ensureAuthenticated, function(req, res){
+//     // res.render('account.html', { user: req.user });
+//     res.send({ user: req.user });
+// });
+//
+// app.get('/login', function(req, res){
+//     // res.render('login.html', { user: req.user });
+//     res.send('Sorry friend, you must be logged in to do that.');
+// });
+//
+// app.get('/auth/spotify',
+//     passport.authenticate('spotify', {
+//         scope: ['user-read-email', 'user-read-private']
+//     }),
+//     function (req, res) {
+//     });
+//
+// app.get('/auth/spotify/callback',
+//     passport.authenticate('spotify', { failureRedirect: '/login' }),
+//     function(req, res) {
+//         res.redirect('/');
+//     });
+//
+// app.get('/:provider/:genre/:category', ensureAuthenticated, function(req, res){
+//     res.send({ user: req.user });
+// });
 
 routes(app);
 
@@ -151,10 +151,10 @@ console.log("Node application running on port " + port);
 //   the request is authenticated (typically via a persistent login session),
 //   the request will proceed. Otherwise, the user will be redirected to the
 //   login page.
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) { return next(); }
-    res.redirect('/login');
-}
+// function ensureAuthenticated(req, res, next) {
+//     if (req.isAuthenticated()) { return next(); }
+//     res.redirect('/login');
+// }
 
 
 // https://github.com/thelinmichael/spotify-web-api-node
