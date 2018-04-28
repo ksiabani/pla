@@ -11,16 +11,11 @@ module.exports = (app) => {
         next();
     });
 
-    app.route('/:provider/:genre/:category')
-        .get(mainCtrl.getMusic);
+    // app.route('/:provider/:genre/:category')
+    //     .get(mainCtrl.getMusic);
 
     app.route('/spotify')
         .get(mainCtrl.getArtistAlbums);
-
-    app.get('/spotify/auth',
-        passport.authenticate('spotify', {scope: ['user-read-email', 'user-read-private'], showDialog: true}),
-        function (req, res) {
-        });
 
     app.use((req, res) => {
         res.status(404)

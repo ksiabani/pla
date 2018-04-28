@@ -41,7 +41,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new SpotifyStrategy({
         clientID: appKey,
         clientSecret: appSecret,
-        callbackURL: 'http://localhost:3500/spotify/callback/'
+        callbackURL: 'http://localhost:3500/auth/spotify/callback/'
     },
     function(accessToken, refreshToken, expires_in, profile, done) {
         // asynchronous verification, for effect...
@@ -100,12 +100,43 @@ app.use(passport.session());
 //   request. If authentication fails, the user will be redirected back to the
 //   login page. Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-app.get('/spotify/callback',
+// app.get('/spotify/callback',
+//     passport.authenticate('spotify', { failureRedirect: '/login' }),
+//     function(req, res) {
+//         res.redirect('/');
+//     });
+
+app.get('/', function(req, res){
+    // res.render('index.html', { user: req.user });
+    res.send({ user: req.user });
+});
+
+app.get('/account', ensureAuthenticated, function(req, res){
+    // res.render('account.html', { user: req.user });
+    res.send({ user: req.user });
+});
+
+app.get('/login', function(req, res){
+    // res.render('login.html', { user: req.user });
+    res.send('Sorry friend, you must be logged in to do that.');
+});
+
+app.get('/auth/spotify',
+    passport.authenticate('spotify', {
+        scope: ['user-read-email', 'user-read-private']
+    }),
+    function (req, res) {
+    });
+
+app.get('/auth/spotify/callback',
     passport.authenticate('spotify', { failureRedirect: '/login' }),
     function(req, res) {
         res.redirect('/');
     });
 
+app.get('/:provider/:genre/:category', ensureAuthenticated, function(req, res){
+    res.send({ user: req.user });
+});
 
 routes(app);
 
@@ -113,6 +144,18 @@ routes(app);
 app.listen(port);
 
 console.log("Node application running on port " + port);
+
+
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed. Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) { return next(); }
+    res.redirect('/login');
+}
+
 
 // https://github.com/thelinmichael/spotify-web-api-node
 // https://www.npmjs.com/package/passport-spotify
