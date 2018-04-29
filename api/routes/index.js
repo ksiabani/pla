@@ -1,13 +1,12 @@
 'use strict';
 
 const mainCtrl = require('../controllers');
-const passport = require('passport');
 
 module.exports = (app) => {
 
     app.route('/')
         .get((req, res) => {
-            res.send({user: req.user});
+            res.send('You are home now friend.');
         });
 
     app.route('/login')
@@ -16,24 +15,22 @@ module.exports = (app) => {
         });
 
     app.route('/auth/spotify')
-        .get(passport.authenticate('spotify', {
-            scope: ['user-read-email', 'user-read-private']
-        }), (req, res) => {
-            // this will never be called
-        });
+        .get(mainCtrl.loginWithSpotify);
 
     app.route('/auth/spotify/callback')
-        .get(passport.authenticate('spotify', {
-            failureRedirect: '/login'
-        }), (req, res) => {
-            res.redirect('/');
-        });
+        .get(mainCtrl.setAccessToken);
 
-    app.route('/spotify')
-        .get(mainCtrl.getArtistAlbums);
+    // app.route('/spotify')
+    //     .get(mainCtrl.getArtistAlbums);
+
+    app.route('/spotify/me')
+        .get(mainCtrl.getSpotifyMe);
 
     app.route('/:provider/:genre/:category')
-        .get(mainCtrl.ensureAuthenticated, mainCtrl.getMusic);
+        .get(mainCtrl.getMeta);
+
+    app.route('/library/:provider/:genre/:category')
+        .get(mainCtrl.addMusic);
 
     app.use((req, res) => {
         res.status(404)

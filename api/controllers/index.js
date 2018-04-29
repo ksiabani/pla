@@ -2,13 +2,13 @@
 
 const svc = require('../services');
 
-const getMusic = async (req, res) => {
-    const genre = req.params.genre;
-    const category = req.params.category;
-    const provider = req.params.provider;
-    const url = urls[provider][genre][category];
-    const response = await svc.scrapMusic(provider, category, url);
-    res.send(response);
+const getMeta = async (req, res) => {
+    try {
+        const response = await svc.scrapMusic(req);
+        res.send(response);
+    } catch(error) {
+        res.send(error)
+    }
 };
 
 const getArtistAlbums = async (req, res) => {
@@ -20,26 +20,82 @@ const getArtistAlbums = async (req, res) => {
     }
 };
 
-const urls = {
-    traxsource: {
-        house: {
-            latest: "https://www.traxsource.com/genre/4/house/all?cn=titles&ipp=10&period=today",
-            popular: "https://www.traxsource.com/genre/4/house/top"
-        },
-        "soulful-house": {
-            latest: "",
-            popular: ""
-        }
+const getSpotifyMe = async(reg, res) => {
+    try {
+        const response = await svc.spotify.getMe();
+        res.send(response.body);
+    } catch(error) {
+        res.send(error.message);
     }
 };
 
-const ensureAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) { return next(); }
-    res.redirect('/login');
+const loginWithSpotify = (req, res) => {
+    res.redirect(svc.authorizeURL);
 };
 
-module.exports = {
-    getMusic,
-    getArtistAlbums,
-    ensureAuthenticated
+const setAccessToken = (req, res) => {
+
+    const code = req.query.code;
+    svc.spotify.authorizationCodeGrant(code).then(
+        function(data) {
+            console.log('The token expires in ' + data.body['expires_in']);
+            console.log('The access token is ' + data.body['access_token']);
+            console.log('The refresh token is ' + data.body['refresh_token']);
+
+            // Set the access token on the API object to use it in later calls
+            svc.spotify.setAccessToken(data.body['access_token']);
+            svc.spotify.setRefreshToken(data.body['refresh_token']);
+            res.redirect('/');
+        },
+        function(err) {
+            console.log('Something went wrong!', err);
+        }
+    );
+
 };
+
+
+// const spotify = (async () => {
+//     const code = await svc.getAuthorizationCode();
+//     const addMusic = async (req, res) => {
+//         try {
+//             const albums = await svc.scrapMusic(req);
+//             res.send(albums);
+//         } catch(error) {
+//             res.send(error);
+//         }
+//     };
+//     return {
+//         code: code(), addMusic: addMusic()
+//     };
+// })();
+
+const addMusic = async (req, res) => {
+    try {
+        // const code = await svc.getAuthorizationCode();
+        // const albums = await svc.scrapMusic(req);
+        // res.send(code);
+    } catch(error) {
+        res.send(error);
+    }
+};
+
+
+
+// const ensureAuthenticated = (req, res, next) => {
+//     if (req.isAuthenticated()) { return next(); }
+//     res.redirect('/login');
+// };
+
+module.exports = {
+    getMeta,
+    getArtistAlbums,
+    addMusic,
+    loginWithSpotify,
+    setAccessToken,
+    getSpotifyMe
+};
+
+// Flow:
+// 1: Request an endpoint
+// 2: if access denied redirect to authorizeurl
