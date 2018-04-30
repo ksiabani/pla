@@ -6,7 +6,7 @@ const getMeta = async (req, res) => {
     try {
         const response = await svc.scrapMeta(req);
         res.send(response);
-    } catch(error) {
+    } catch (error) {
         res.send(error)
     }
 };
@@ -15,16 +15,16 @@ const getArtistAlbums = async (req, res) => {
     try {
         const response = await svc.spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE');
         res.send(response.body);
-    } catch(error) {
+    } catch (error) {
         res.send(error.message);
     }
 };
 
-const getSpotifyMe = async(reg, res) => {
+const getSpotifyMe = async (reg, res) => {
     try {
         const response = await svc.spotify.getMe();
         res.send(response.body);
-    } catch(error) {
+    } catch (error) {
         res.send(error.message);
     }
 };
@@ -37,7 +37,7 @@ const setAccessToken = (req, res) => {
 
     const code = req.query.code;
     svc.spotify.authorizationCodeGrant(code).then(
-        function(data) {
+        function (data) {
             console.log('The token expires in ' + data.body['expires_in']);
             console.log('The access token is ' + data.body['access_token']);
             console.log('The refresh token is ' + data.body['refresh_token']);
@@ -47,7 +47,7 @@ const setAccessToken = (req, res) => {
             svc.spotify.setRefreshToken(data.body['refresh_token']);
             res.redirect('/');
         },
-        function(err) {
+        function (err) {
             console.log('Something went wrong!', err);
         }
     );
@@ -57,18 +57,33 @@ const setAccessToken = (req, res) => {
 const addMusic = async (req, res) => {
     try {
         const meta = await svc.scrapMeta(req);
+        const genre = req.params.genre;
+        const category = req.params.category;
         const uris = [];
         for (let item of meta) {
-          const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`);
-          const uri = track.body.tracks.items[0] && track.body.tracks.items[0].uri;
-          if (uri) {
-            uris.push(uri);
-          }
+            const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
+            const uri = track.body.tracks.items[0] && track.body.tracks.items[0].uri;
+            const releaseDate = track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
+            if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
+                uris.push(uri);
+            }
         }
-        await svc.spotify.addTracksToPlaylist('ksiabani', '6WlLThhqhYLtivKnlBALC8', uris);
+        await svc.spotify.removeTracksFromPlaylist('ksiabani', playlistUris[genre][category], uris.map(uri=> ({"uri": uri})));
+        await svc.spotify.addTracksToPlaylist('ksiabani', playlistUris[genre][category], uris);
         res.send(`${uris.length} tracks added to playlist`);
-    } catch(error) {
-        res.send(error.message);
+    } catch (error) {
+        res.send(error);
+    }
+};
+
+const playlistUris = {
+    house: {
+        new: '6WlLThhqhYLtivKnlBALC8',
+        top: ''
+    },
+    electronica: {
+        new: '7uIhCfXZlwnKlH0wMoyFce',
+        top: ''
     }
 };
 

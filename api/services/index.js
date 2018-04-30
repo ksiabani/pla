@@ -71,15 +71,16 @@ class Traxsource {
 const urls = {
     traxsource: {
         house: {
-            new: "https://www.traxsource.com/genre/4/house/featured?cn=tracks&ipp=100&gf=4&ob=r_date&so=desc",
-            top: "https://www.traxsource.com/genre/4/house/top?cn=tracks&gf=4"
+            new: 'https://www.traxsource.com/genre/4/house/featured?cn=tracks&ipp=100&gf=4&ob=r_date&so=desc',
+            top: 'https://www.traxsource.com/genre/4/house/top?cn=tracks&gf=4'
         },
-        "soulful-house": {
-            new: "",
-            top: ""
+        electronica : {
+            new: 'https://www.traxsource.com/genre/5/electronica/featured?cn=tracks&ipp=100&gf=5&ob=r_date&so=desc',
+            top: 'https://www.traxsource.com/genre/5/electronica/top?cn=tracks&gf=5'
         }
     }
 };
+
 
 module.exports = {
     scrapMeta,
