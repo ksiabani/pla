@@ -2,10 +2,19 @@
 
 const axios = require('axios');
 const cheerio = require('cheerio');
-const Album = require('../models').Album;
+const Track = require('../models').Track;
 const SpotifyWebApi = require('spotify-web-api-node');
 
-const scopes = ['user-read-private', 'user-read-email'];
+const scopes = [
+    'user-read-private',
+    'user-read-email',
+    'playlist-modify-public',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'playlist-modify-private',
+    'user-library-modify',
+    'user-library-read'
+];
 const redirectUri = 'http://localhost:3500/auth/spotify/callback/';
 const clientId = 'a521d27c6707473da14d2cc038ea942c';
 // const state = 'some-state-of-my-choice';
@@ -21,72 +30,7 @@ const spotify = new SpotifyWebApi({
 // Create the authorization URL
 const authorizeURL = spotify.createAuthorizeURL(scopes);
 
-
-// const spotify = new SpotifyWebApi({
-//     clientId: 'a521d27c6707473da14d2cc038ea942c',
-//     redirectUri: 'http://localhost:3500/auth/spotify/callback/',
-//     clientSecret : 'b2da3f96d90a4e8aa5595e435ef1e617'
-// });
-//
-// const authorizeURL = spotify.createAuthorizeURL(['user-read-private', 'user-read-email']);
-// console.log(authorizeURL);
-
-// axios.get(authorizeURL).then(response => {
-//     return;
-    // const code = response.headers['set-cookie'][0].split(';')[0].split('=')[1];
-    // console.log(response);
-    // spotify.authorizationCodeGrant(code).then(
-    //     function(data) {
-    //         console.log('The token expires in ' + data.body['expires_in']);
-    //         console.log('The access token is ' + data.body['access_token']);
-    //         console.log('The refresh token is ' + data.body['refresh_token']);
-    //
-    //         // Set the access token on the API object to use it in later calls
-    //         spotifyApi.setAccessToken(data.body['access_token']);
-    //         spotifyApi.setRefreshToken(data.body['refresh_token']);
-    //     },
-    //     function(err) {
-    //         console.log('Something went wrong!', err);
-    //     }
-    // );
-// });
-
-
-
-
-// (async () => {
-//     const code = await getAuthorizationCode();
-//     console.log(code);
-// })();
-
-
-
-
-
-
-
-
-// clientSecret : 'b2da3f96d90a4e8aa5595e435ef1e617'
-
-// spotifyApi.setAccessToken()
-//
-// const credentials = await svc.spotifyApi.clientCredentialsGrant();
-// await svc.spotifyApi.setAccessToken(credentials.body['access_token']);
-
-// spotifyApi.clientCredentialsGrant().then(
-//     function(data) {
-//         console.log('The access token expires in ' + data.body['expires_in']);
-//         console.log('The access token is ' + data.body['access_token']);
-//
-//         // Save the access token so that it's used in future calls
-//         spotifyApi.setAccessToken(data.body['access_token']);
-//     },
-//     function(err) {
-//         console.log('Something went wrong when retrieving an access token', err);
-//     }
-// );
-
-const scrapMusic = async (req) => {
+const scrapMeta = async (req) => {
     try {
         const genre = req.params.genre;
         const category = req.params.category;
@@ -95,8 +39,8 @@ const scrapMusic = async (req) => {
         switch (provider) {
             case 'traxsource':
                 const response = await axios.get(url);
-                const traxsource = new Traxsource(category);
-                return traxsource.scrap(response.data);
+                const traxsource = new Traxsource();
+                return traxsource.scrapper(response.data);
             default:
                 return;
         }
@@ -106,46 +50,39 @@ const scrapMusic = async (req) => {
 };
 
 class Traxsource {
-    constructor(category) {
-        this.category = category;
-    }
+    constructor() {}
 
-    scrap(html) {
-        switch (this.category) {
-            case 'latest':
-                return this.getAlbumsFromTraxsource(html);
-            default:
-                return;
-        }
-    }
-
-    getAlbumsFromTraxsource(html) {
+    scrapper(html){
         const $ = cheerio.load(html);
-        let albums = [];
-        $('.links.ellip').each((idx, el) => {
-            const artist = $(el).clone().children().remove().end().text().replace(/\r?\n|\r/, '').trim();
-            const title = $(el).children().first().text();
-            albums.push(new Album(title, artist));
+        let tracks = [];
+        $('.trk-row.play-trk').each((idx, el) => {
+            // const artist = $(el).clone().children().remove().end().text().replace(/\r?\n|\r/, '').trim();
+            // const title = $(el).children().first().text();
+            const mainTitle = $(el).find('.trk-cell.title').children().first().text().trim();
+            let remixTitle = $(el).find('.trk-cell.title .version').clone().children().remove().end().text().replace(/\r?\n|\r/, '').trim();
+            if (remixTitle === 'Original Mix') { remixTitle = ''}
+            const artist = $(el).find('.trk-cell.artists').children().first().text().trim();
+            tracks.push(new Track(`${mainTitle} ${remixTitle}`, artist));
         });
-        return albums;
+        return tracks;
     }
 }
 
 const urls = {
     traxsource: {
         house: {
-            latest: "https://www.traxsource.com/genre/4/house/all?cn=titles&ipp=10&period=today",
-            popular: "https://www.traxsource.com/genre/4/house/top"
+            new: "https://www.traxsource.com/genre/4/house/featured?cn=tracks&ipp=100&gf=4&ob=r_date&so=desc",
+            top: "https://www.traxsource.com/genre/4/house/top?cn=tracks&gf=4"
         },
         "soulful-house": {
-            latest: "",
-            popular: ""
+            new: "",
+            top: ""
         }
     }
 };
 
 module.exports = {
-    scrapMusic,
+    scrapMeta,
     spotify,
     authorizeURL
 };

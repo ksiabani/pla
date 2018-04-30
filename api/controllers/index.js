@@ -4,7 +4,7 @@ const svc = require('../services');
 
 const getMeta = async (req, res) => {
     try {
-        const response = await svc.scrapMusic(req);
+        const response = await svc.scrapMeta(req);
         res.send(response);
     } catch(error) {
         res.send(error)
@@ -54,38 +54,23 @@ const setAccessToken = (req, res) => {
 
 };
 
-
-// const spotify = (async () => {
-//     const code = await svc.getAuthorizationCode();
-//     const addMusic = async (req, res) => {
-//         try {
-//             const albums = await svc.scrapMusic(req);
-//             res.send(albums);
-//         } catch(error) {
-//             res.send(error);
-//         }
-//     };
-//     return {
-//         code: code(), addMusic: addMusic()
-//     };
-// })();
-
 const addMusic = async (req, res) => {
     try {
-        // const code = await svc.getAuthorizationCode();
-        // const albums = await svc.scrapMusic(req);
-        // res.send(code);
+        const meta = await svc.scrapMeta(req);
+        const uris = [];
+        for (let item of meta) {
+          const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`);
+          const uri = track.body.tracks.items[0] && track.body.tracks.items[0].uri;
+          if (uri) {
+            uris.push(uri);
+          }
+        }
+        await svc.spotify.addTracksToPlaylist('ksiabani', '6WlLThhqhYLtivKnlBALC8', uris);
+        res.send(`${uris.length} tracks added to playlist`);
     } catch(error) {
-        res.send(error);
+        res.send(error.message);
     }
 };
-
-
-
-// const ensureAuthenticated = (req, res, next) => {
-//     if (req.isAuthenticated()) { return next(); }
-//     res.redirect('/login');
-// };
 
 module.exports = {
     getMeta,
@@ -96,6 +81,8 @@ module.exports = {
     getSpotifyMe
 };
 
-// Flow:
-// 1: Request an endpoint
-// 2: if access denied redirect to authorizeurl
+// Playlist rules:
+// * Max no of track is 99
+// * No duplicates
+// * No collections
+// * When newer tracks are added older tracks are removed
