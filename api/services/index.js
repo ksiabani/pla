@@ -34,25 +34,27 @@ const scrapMeta = async (req) => {
     try {
         const genre = req.params.genre;
         const category = req.params.category;
-        const provider = req.params.provider;
-        const url = urls[provider][genre][category];
-        switch (provider) {
-            case 'traxsource':
-                const response = await axios.get(url);
-                const traxsource = new Traxsource();
-                return traxsource.scrapper(response.data);
-            default:
-                return;
-        }
+        // const traxsource = new Traxsource();
+        const provider = new Beatport();
+        // const traxsourceUrl = urls.traxsource[genre][category];
+        const url = urls.beatport[genre][category];
+        // const traxsourceReponse = await axios.get(traxsourceUrl);
+        const response = await axios.get(url);
+        // return traxsource.scrapper(traxsourceReponse.data)
+        //     .concat(beatport.scrapper(beatportResponse.data));
+        return provider.scrapper(response.data);
     } catch (error) {
         return error;
     }
 };
 
-class Traxsource {
-    constructor() {}
 
-    scrapper(html){
+class Traxsource {
+
+    constructor() {
+    }
+
+    scrapper(html) {
         const $ = cheerio.load(html);
         let tracks = [];
         $('.trk-row.play-trk').each((idx, el) => {
@@ -60,9 +62,34 @@ class Traxsource {
             // const title = $(el).children().first().text();
             const mainTitle = $(el).find('.trk-cell.title').children().first().text().trim();
             let remixTitle = $(el).find('.trk-cell.title .version').clone().children().remove().end().text().replace(/\r?\n|\r/, '').trim();
-            if (remixTitle === 'Original Mix') { remixTitle = ''}
+            if (remixTitle.toLowerCase() === 'original mix') {
+                remixTitle = ''
+            }
             const artist = $(el).find('.trk-cell.artists').children().first().text().trim();
-            tracks.push(new Track(`${mainTitle} ${remixTitle}`, artist));
+            const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
+            tracks.push(new Track(title, artist));
+        });
+        return tracks;
+    }
+}
+
+class Beatport {
+
+    constructor() {
+    }
+
+    scrapper(html) {
+        const $ = cheerio.load(html);
+        let tracks = [];
+        $('.bucket-item.ec-item.track').each((idx, el) => {
+            const mainTitle = $(el).data('ec-name').trim();
+            const artist = $(el).data('ec-d1').trim();
+            let remixTitle = $(el).find('.buk-track-remixed').text().trim();
+            if (remixTitle.toLowerCase() === 'original mix') {
+                remixTitle = ''
+            }
+            const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
+            tracks.push(new Track(title, artist));
         });
         return tracks;
     }
@@ -74,9 +101,26 @@ const urls = {
             new: 'https://www.traxsource.com/genre/4/house/featured?cn=tracks&ipp=100&gf=4&ob=r_date&so=desc',
             top: 'https://www.traxsource.com/genre/4/house/top?cn=tracks&gf=4'
         },
-        electronica : {
+        electronica: {
             new: 'https://www.traxsource.com/genre/5/electronica/featured?cn=tracks&ipp=100&gf=5&ob=r_date&so=desc',
             top: 'https://www.traxsource.com/genre/5/electronica/top?cn=tracks&gf=5'
+        },
+        liquid: {
+            new: 'https://www.traxsource.com/genre/2/broken-beat-nu-jazz/all?cn=tracks&ipp=100&gf=2&ob=default&so=desc'
+        }
+    },
+    beatport: {
+        house: {
+            new: 'https://www.beatport.com/genre/house/5/tracks?per-page=150&sort=release-desc&page=2',
+            top: ''
+        },
+        electronica: {
+            new: '',
+            top: ''
+        },
+        liquid: {
+            new: 'https://www.beatport.com/genre/drum-and-bass/1/tracks?subgenre=5&per-page=150',
+            top: ''
         }
     }
 };

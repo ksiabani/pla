@@ -23,13 +23,13 @@ module.exports = (app) => {
     // app.route('/spotify')
     //     .get(mainCtrl.getArtistAlbums);
 
-    app.route('/spotify/me')
-        .get(mainCtrl.getSpotifyMe);
+    // app.route('/spotify/me')
+    //     .get(mainCtrl.getSpotifyMe);
 
-    app.route('/:provider/:genre/:category')
-        .get(mainCtrl.getMeta);
+    // app.route('/:provider/:genre/:category')
+    //     .get(mainCtrl.getMeta);
 
-    app.route('/library/:provider/:genre/:category')
+    app.route('/library/:genre/:category')
         .get(mainCtrl.addMusic);
 
     app.use((req, res) => {

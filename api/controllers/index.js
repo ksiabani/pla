@@ -56,21 +56,40 @@ const setAccessToken = (req, res) => {
 
 const addMusic = async (req, res) => {
     try {
-        const meta = await svc.scrapMeta(req);
+        let meta = await svc.scrapMeta(req);
+        // Remove duplicates
+        // https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+        // TODO: Does this really work?
+        meta = [...new Set(meta)];
         const genre = req.params.genre;
         const category = req.params.category;
         const uris = [];
         for (let item of meta) {
+            // TODO: Is searcher good with commas or should I remove them from artists names
+            // TODO: Improve search, some tracks do contain original mix
             const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
-            const uri = track.body.tracks.items[0] && track.body.tracks.items[0].uri;
-            const releaseDate = track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
+            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
+            const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
                 uris.push(uri);
             }
         }
-        await svc.spotify.removeTracksFromPlaylist('ksiabani', playlistUris[genre][category], uris.map(uri=> ({"uri": uri})));
-        await svc.spotify.addTracksToPlaylist('ksiabani', playlistUris[genre][category], uris);
-        res.send(`${uris.length} tracks added to playlist`);
+        // await svc.spotify.removeTracksFromPlaylist('ksiabani', playlistUris[genre][category], uris.map(uri=> ({"uri": uri})));
+        // await svc.spotify.addTracksToPlaylist('ksiabani', playlistUris[genre][category], uris);
+        const playlistData = await svc.spotify.getPlaylist('ksiabani', playlistUris[genre][category]);
+        const playlistTrackUris = playlistData.body.tracks.items.map(item => item.track.uri);
+
+        // https://stackoverflow.com/questions/1187518/how-to-get-the-difference-between-two-arrays-in-javascript
+        const uniqueUris = uris
+            .filter(x => !playlistTrackUris.includes(x))
+            .concat(playlistTrackUris.filter(x => !uris.includes(x)));
+
+        console.log(uniqueUris.length);
+        const playlistUri = playlistUris[genre][category];
+
+        await svc.spotify.addTracksToPlaylist('ksiabani', playlistUri, uniqueUris.slice(0, 100));
+
+        res.send(`${uniqueUris.length} tracks added to playlist`);
     } catch (error) {
         res.send(error);
     }
@@ -84,16 +103,20 @@ const playlistUris = {
     electronica: {
         new: '7uIhCfXZlwnKlH0wMoyFce',
         top: ''
+    },
+    liquid: {
+        new: '1HrrXgJSqdBzJBhk44nByG',
+        top: ''
     }
 };
 
 module.exports = {
-    getMeta,
-    getArtistAlbums,
+    // getMeta,
+    // getArtistAlbums,
     addMusic,
     loginWithSpotify,
-    setAccessToken,
-    getSpotifyMe
+    setAccessToken
+    // getSpotifyMe
 };
 
 // Playlist rules:

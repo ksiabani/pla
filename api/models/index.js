@@ -26,6 +26,11 @@ class Track {
         this.artist = artist;
         this.album = album;
     }
+    // TODO: Add methods
+    // getUri()
+    // getReleaseYear()
+    // getTitle
+    // you have to think how to use async though
 }
 
 class Album {
