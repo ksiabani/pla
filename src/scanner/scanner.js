@@ -11,11 +11,12 @@ const foo = async () => {
         const meta = await beatport.parser();
         const options = {upsert: true, new: true, setDefaultsOnInsert: true};
         for (let obj of meta) {
-            const query = { title: obj.title, artist: obj.artist, category: obj.category};
+            const query = {title: obj.title, artist: obj.artist, category: obj.category};
             // const track = new Track(obj);
             // await track.save();
             await Track.findOneAndUpdate(query, {style: obj.style,}, options);
         }
+        console.log('end');
     }
     catch (error) {
         console.log(error);

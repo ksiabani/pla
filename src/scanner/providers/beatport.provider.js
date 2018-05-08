@@ -1,10 +1,12 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const sleep = require('../../utils/sleep');
 
 const scenarios = [
     {
         name: 'new',
-        url: 'https://www.beatport.com/tracks/all?per-page=150',
+        url: 'https://www.beatport.com/tracks/all?per-page=150&page=',
+        pagesToFollow: 15,
         parserFn: ($) => {
             return Array.from($('.bucket-item.ec-item.track'), el => {
                 const mainTitle = $(el).data('ec-name').trim();
@@ -29,16 +31,20 @@ class Beatport {
         try {
             let meta = [];
             for (let scenario of scenarios) {
-                const url = scenario.url;
-                const response = await axios.get(url);
-                const $ = cheerio.load(response.data);
-                const tracks = scenario.parserFn($);
-                meta = [...meta, ...tracks];
+                for (let i = 1; i <= scenario.pagesToFollow; i++) {
+                    const url = `${scenario.url}${i}`;
+                    const response = await axios.get(url);
+                    const $ = cheerio.load(response.data);
+                    const tracks = scenario.parserFn($);
+                    meta = [...meta, ...tracks];
+                    console.log(url);
+                    await sleep(10000);
+                }
             }
             return meta;
         }
         catch (error) {
-            return error;
+            console.log(error);
         }
 
     }
