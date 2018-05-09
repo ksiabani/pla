@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const trackSchema = new Schema({
     title: { type: String, required: true },
     artist: { type: String, required: true },
-    style: { type: String, required: true },
+    styles: { type: Array, required: true },
     category: { type: String, required: true },
     spotify_uri: String
 });

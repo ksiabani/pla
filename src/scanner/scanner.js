@@ -14,7 +14,7 @@ const foo = async () => {
             const query = {title: obj.title, artist: obj.artist, category: obj.category};
             // const track = new Track(obj);
             // await track.save();
-            await Track.findOneAndUpdate(query, {style: obj.style,}, options);
+            await Track.findOneAndUpdate(query, {styles: obj.styles,}, options);
         }
         console.log('end');
     }
