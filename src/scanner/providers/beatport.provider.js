@@ -4,8 +4,8 @@ const sleep = require('../../utils/sleep');
 
 const scenarios = [
     {
-        name: 'new',
-        url: 'https://www.beatport.com/tracks/all?per-page=150&page=',
+        name: 'new liquid',
+        url: 'https://www.beatport.com/genre/drum-and-bass/1/tracks?subgenre=5&per-page=150&page=',
         pagesToFollow: 1,
         parserFn: ($) => {
             return Array.from($('.bucket-item.ec-item.track'), el => {
