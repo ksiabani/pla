@@ -1,14 +1,10 @@
-'use strict';
-
 const express = require('express');
-const app = express();
+const mongoose = require('mongoose');
 const port = process.env.PORT || 3500;
-const routes = require('./api/routes');
+const routes = require('./src/api/routes');
+const app = express();
 
+mongoose.connect('mongodb://localhost:27017/albdb');
 routes(app);
 app.listen(port);
 console.log("Node application running on port " + port);
-
-// https://github.com/thelinmichael/spotify-web-api-node
-// https://www.npmjs.com/package/passport-spotify
-// https://www.npmjs.com/package/spotify-uri

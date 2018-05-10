@@ -1,5 +1,3 @@
-'use strict';
-
 const axios = require('axios');
 const cheerio = require('cheerio');
 const Track = require('../models').Track;
@@ -25,6 +23,7 @@ const spotify = new SpotifyWebApi({
     redirectUri: redirectUri,
     clientId: clientId,
     clientSecret: clientSecret
+    // showDialog: true // This doesn't seem to work
 });
 
 // Create the authorization URL

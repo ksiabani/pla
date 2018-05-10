@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // TODO: Make unique the combination of uri and category
+// TODO: Add creation and update date
+// UserSchema.plugin(timestamps);
 
 const trackSchema = new Schema({
     title: { type: String, required: true },

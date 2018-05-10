@@ -1,6 +1,5 @@
-'use strict';
-
 const svc = require('../services');
+const Track = require('../models/track');
 
 const getMeta = async (req, res) => {
     try {
@@ -110,13 +109,41 @@ const playlistUris = {
     }
 };
 
+const matcher = async (req, res) => {
+    try {
+        const meta = await Track.find({}).exec();
+        let updated = 0;
+        const options = {multi: true};
+        for (let item of meta) {
+            // TODO: Is searcher good with commas or should I remove them from artists names
+            // TODO: Improve search, some tracks do contain original mix
+            const query = {title: item.title, artist: item.artist};
+            const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
+            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
+            const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
+            if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
+                const response = await Track.update(query, {spotify_uri: uri}, options);
+                if (response.nModified > 0) {
+                    updated += response.nModified;
+                }
+            }
+        }
+        res.send(`${updated} tracks were updated`);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+};
+
 module.exports = {
     // getMeta,
     // getArtistAlbums,
     addMusic,
     loginWithSpotify,
-    setAccessToken
-    // getSpotifyMe
+    setAccessToken,
+    getSpotifyMe,
+    matcher
 };
 
 // Playlist rules:

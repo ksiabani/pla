@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Track = require('./models/track');
+const Track = require('../api/models/track');
 const Beatport = require('./providers/beatport.provider');
 
 mongoose.connect('mongodb://localhost/albdb');
