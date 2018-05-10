@@ -1,9 +1,12 @@
-'use strict';
+// TODO: Put routes to separate files
 
-const mainCtrl = require('../controllers');
-const Track = require('../controllers/track');
+const spotify = require('../controllers/spotify.controller');
+const track = require('../controllers/track.controller');
 
 module.exports = (app) => {
+
+    //
+    // Basic stuff
 
     app.route('/')
         .get((req, res) => {
@@ -15,37 +18,41 @@ module.exports = (app) => {
             res.send('Sorry friend, you must be logged in to do that.');
         });
 
+    //
+    // Auth
+
     app.route('/auth/spotify')
-        .get(mainCtrl.loginWithSpotify);
+        .get(spotify.loginWithSpotify);
+
+    //
+    // Spotify
 
     app.route('/auth/spotify/callback')
-        .get(mainCtrl.setAccessToken);
+        .get(spotify.setAccessToken);
 
     // app.route('/spotify')
-    //     .get(mainCtrl.getArtistAlbums);
+    //     .get(spotify.getArtistAlbums);
 
     app.route('/spotify/me')
-        .get(mainCtrl.getSpotifyMe);
+        .get(spotify.getSpotifyMe);
 
-    // app.route('/:provider/:genre/:category')
-    //     .get(mainCtrl.getMeta);
+    app.route('/spotify/matcher')
+        .get(spotify.matcher);
 
-    app.route('/library/:genre/:category')
-        .get(mainCtrl.addMusic);
+    app.route('/spotify/playlists')
+        .get(spotify.getUserPlaylists);
 
-    // api.route('/users').get(User.list);
-    // api.route('/users/:userId').get(User.get);
-    // api.route('/users').post(User.post);
-    // api.route('/users/:userId').put(User.put);
-    // api.route('/users/:userId').delete(User.delete);
+    app.route('/spotify/playlists/:playlistId')
+        .get(spotify.getPlaylist);
 
-    app.route('/tracks').get(Track.list);
+    //
+    // Track
+
+    app.route('/tracks').get(track.list);
     // app.route('/tracks/:trackId').get(Track.get);
     // app.route('/tracks').post(Track.post);
     // app.route('/tracks/:trackId').put(Track.put);
     // app.route('/tracks/:trackId').delete(Track.remove);
-
-    app.route('/spotify/matcher').get(mainCtrl.matcher);
 
     app.use((req, res) => {
         res.status(404)

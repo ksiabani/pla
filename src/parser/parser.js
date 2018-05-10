@@ -6,21 +6,19 @@ mongoose.connect('mongodb://localhost/albdb');
 const beatport = new Beatport();
 
 
-const foo = async () => {
+const go = async () => {
     try {
         const meta = await beatport.parser();
         const options = {upsert: true, new: true, setDefaultsOnInsert: true};
-        for (let obj of meta) {
-            const query = {title: obj.title, artist: obj.artist, category: obj.category};
-            // const track = new Track(obj);
-            // await track.save();
-            await Track.findOneAndUpdate(query, {styles: obj.styles,}, options);
+        for (let piece of meta) {
+            const query = {title: piece.title, artist: piece.artist, category: piece.category};
+            await Track.findOneAndUpdate(query, {styles: piece.styles,}, options);
         }
-        console.log('end');
+        console.log(`Done parsing ${meta.length} titles.`);
     }
     catch (error) {
         console.log(error);
     }
 };
 
-foo();
+go();
