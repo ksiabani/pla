@@ -53,14 +53,15 @@ const playlistUris = {
 
 const matcher = async (req, res) => {
     try {
-        const meta = await Track.find({}).exec();
+        // Get tracks that don't have a uri
+        const meta = await Track.find({spotify_uri: null}).exec();
         let updated = 0;
         const options = {multi: true};
         for (let item of meta) {
             // TODO: Is searcher good with commas or should I remove them from artists names
             // TODO: Improve search, some tracks do contain original mix
             const query = {title: item.title, artist: item.artist};
-            const track = await svc.spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
+            const track = await spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
@@ -70,11 +71,11 @@ const matcher = async (req, res) => {
                 }
             }
         }
-        res.send(`${updated} tracks were updated`);
+        res.send(`${updated} tracks were matched`);
 
     }
     catch (error) {
-        console.log(error);
+        res.send(error.message);
     }
 };
 
@@ -92,8 +93,8 @@ const getUserPlaylists = async (req, res) => {
 
 const getPlaylist = async (req, res) => {
     try {
-        const playlistId = req.params.playlistId;
         const user = await spotify.getMe();
+        const playlistId = req.params.playlistId;
         const response = await spotify.getPlaylist(user.body.id, playlistId);
         res.send(response.body);
     }
@@ -104,6 +105,59 @@ const getPlaylist = async (req, res) => {
 
 const updatePlaylist = async (req, res) => {
     try {
+        const user = await spotify.getMe();
+        const userId = user.body.id;
+        const playlistId = req.params.playlistId;
+        const playlist = await spotify.getPlaylist(userId, playlistId);
+        let text = '';
+
+        // Sort playlist tracks by date ascending
+        const tracks = playlist.body.tracks.items.sort((a, b) => {
+            if (new Date(a.added_at) > new Date(b.added_at)) {
+                return 1;
+            }
+            if (new Date(a.added_at) < new Date(b.added_at)) {
+                return -1;
+            }
+            if (new Date(a.added_at).getTime() === new Date(b.added_at).getTime()) {
+                return 0;
+            }
+        });
+        text = `Playlist has ${tracks.length} tracks\n`;
+
+        // Get the date the last track was added
+        const lastAddedDate = new Date(tracks[tracks.length - 1].added_at); // fastest option
+        text += `Last track in playlist was added at ${lastAddedDate}\n`;
+
+        // Find tracks in db since last added date that have been matched (max 99)
+        // These are the tracks we will add in a minute
+        const recentlyMatchedTracks = await Track.find({
+            spotify_uri: {$ne: null},
+            updatedAt: {
+                "$gt": new Date(lastAddedDate)
+            }
+        }, {}, {lean: true}).exec();
+        const recentlyMatched = recentlyMatchedTracks.splice(0, 99);
+        const recentlyMatchedUris = recentlyMatched.map(track => track.spotify_uri);
+        text += `Since then ${recentlyMatched.length} tracks have been matched.\n`;
+
+        // Get the tracks to remove from the playlist
+        const tracksToRemoveUris = tracks.slice(0, recentlyMatched.length).map(track => {
+            return {uri: track.track.uri}
+        });
+        text += `${tracksToRemoveUris.length} tracks will be removed from the playlist.\n`;
+
+        // Remove tracks from playlist
+        if (tracksToRemoveUris && tracksToRemoveUris.length) {
+            await spotify.removeTracksFromPlaylist(userId, playlistId, [...tracksToRemoveUris]);
+        }
+
+        // Add tracks to playlist
+        if (recentlyMatchedUris && recentlyMatchedUris.length) {
+            await spotify.addTracksToPlaylist(userId, playlistId, [...recentlyMatchedUris]);
+        }
+
+        res.send(text);
     }
     catch (error) {
         res.send(error.message);
