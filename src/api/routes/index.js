@@ -43,7 +43,8 @@ module.exports = (app) => {
         .get(spotify.getUserPlaylists);
 
     app.route('/spotify/playlists/:playlistId')
-        .get(spotify.getPlaylist);
+        .get(spotify.getPlaylist)
+        .put(spotify.updatePlaylist);
 
     //
     // Track

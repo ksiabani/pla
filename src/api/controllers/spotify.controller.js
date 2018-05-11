@@ -102,13 +102,22 @@ const getPlaylist = async (req, res) => {
     }
 };
 
+const updatePlaylist = async (req, res) => {
+    try {
+    }
+    catch (error) {
+        res.send(error.message);
+    }
+};
+
 module.exports = {
     loginWithSpotify,
     setAccessToken,
     getSpotifyMe,
     matcher,
     getUserPlaylists,
-    getPlaylist
+    getPlaylist,
+    updatePlaylist
 };
 
 // Playlist rules:
@@ -116,3 +125,9 @@ module.exports = {
 // * No duplicates
 // * No collections
 // * When newer tracks are added older tracks are removed
+
+// Update playlist:
+// 1. Get current playlist's tracks and sort by date of addition
+// 2. Get recent tracks from that date onwards (max 99)
+// 3. Add recent n tracks (max 99)
+// 4. Remove oldest tracks from playlist (max 99)
