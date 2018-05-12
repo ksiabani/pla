@@ -131,9 +131,11 @@ const updatePlaylist = async (req, res) => {
 
         // Find tracks in db since last added date that have been matched (max 99)
         // These are the tracks we will add in a minute
+
+        // TODO: Change this with updatedAt when ready
         const recentlyMatchedTracks = await Track.find({
             spotify_uri: {$ne: null},
-            updatedAt: {
+            createdAt: {
                 "$gt": new Date(lastAddedDate)
             }
         }, {}, {lean: true}).exec();
