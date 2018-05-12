@@ -110,7 +110,7 @@ const updatePlaylist = async (req, res) => {
         const userId = user.body.id;
         const playlistId = req.params.playlistId;
         const playlist = await spotify.getPlaylist(userId, playlistId);
-        const style = playlist.body.description;
+        const style = playlist.body.description.replace('&#x2F;', '/');
         let text;
         let tracks = playlist.body.tracks.items;
 
