@@ -75,6 +75,7 @@ const matcher = async (req, res) => {
 
     }
     catch (error) {
+        console.log(error);
         res.send(error.message);
     }
 };
@@ -109,36 +110,39 @@ const updatePlaylist = async (req, res) => {
         const userId = user.body.id;
         const playlistId = req.params.playlistId;
         const playlist = await spotify.getPlaylist(userId, playlistId);
-        let text = '';
+        const style = playlist.body.description;
+        let text;
+        let tracks = playlist.body.tracks.items;
 
         // Sort playlist tracks by date ascending
-        const tracks = playlist.body.tracks.items.sort((a, b) => {
-            if (new Date(a.added_at) > new Date(b.added_at)) {
-                return 1;
-            }
-            if (new Date(a.added_at) < new Date(b.added_at)) {
-                return -1;
-            }
-            if (new Date(a.added_at).getTime() === new Date(b.added_at).getTime()) {
-                return 0;
-            }
-        });
+        if (tracks.length) {
+            tracks.sort((a, b) => {
+                if (new Date(a.added_at) > new Date(b.added_at)) {
+                    return 1;
+                }
+                if (new Date(a.added_at) < new Date(b.added_at)) {
+                    return -1;
+                }
+                if (new Date(a.added_at).getTime() === new Date(b.added_at).getTime()) {
+                    return 0;
+                }
+            });
+        }
         text = `Playlist has ${tracks.length} tracks\n`;
 
         // Get the date the last track was added
-        const lastAddedDate = new Date(tracks[tracks.length - 1].added_at); // fastest option
+        const lastAddedDate = tracks.length && new Date(tracks[tracks.length - 1].added_at) || null; // fastest option
         text += `Last track in playlist was added at ${lastAddedDate}\n`;
 
         // Find tracks in db since last added date that have been matched (max 99)
         // These are the tracks we will add in a minute
 
-        // TODO: Change this with updatedAt when ready
-        const recentlyMatchedTracks = await Track.find({
-            spotify_uri: {$ne: null},
-            createdAt: {
-                "$gt": new Date(lastAddedDate)
-            }
-        }, {}, {lean: true}).exec();
+        // TODO: Change this with updatedAt or else when ready
+        // Remember db could be updated for anything
+        const query = lastAddedDate ?
+            {spotify_uri: {$ne: null}, styles: style, createdAt: {"$gt": new Date(lastAddedDate)}} :
+            {spotify_uri: {$ne: null}, styles: style};
+        const recentlyMatchedTracks = await Track.find(query, {}, {lean: true}).exec();
         const recentlyMatched = recentlyMatchedTracks.splice(0, 99);
         const recentlyMatchedUris = recentlyMatched.map(track => track.spotify_uri);
         text += `Since then ${recentlyMatched.length} tracks have been matched.\n`;
