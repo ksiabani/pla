@@ -49,7 +49,7 @@ const scenarios = [
     },
     {
         name: 'new electronica / downtempo',
-        url: 'https://www.beatport.com/genre/electronica-downtempo/3/tracks?per-page=150&page=',
+        url: 'https://www.beatport.com/tracks/all?type=Release&per-page=150&genres=3&page=1',
         pagesToFollow: 1,
         parserFn: ($) => {
             return Array.from($('.bucket-item.ec-item.track'), el => {

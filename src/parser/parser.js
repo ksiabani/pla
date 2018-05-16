@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 const Track = require('../api/models/track.model');
 const Beatport = require('./providers/beatport.provider');
-const Traxsource = require('./providers/traxsource.provider');
+// const Traxsource = require('./providers/traxsource.provider');
 
 mongoose.connect('mongodb://localhost/albdb');
 
 const beatport = new Beatport();
-const traxsource = new Traxsource();
+// const traxsource = new Traxsource();
 
-const providers = [beatport, traxsource];
+const providers = [beatport];
 
 const go = async () => {
     try {
