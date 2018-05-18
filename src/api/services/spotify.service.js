@@ -1,8 +1,8 @@
 const SpotifyWebApi = require('spotify-web-api-node');
-const redirectUri = 'http://localhost:3500/auth/spotify/callback/';
-const clientId = 'a521d27c6707473da14d2cc038ea942c';
+const redirectUri = process.env.SPOTIFY_REDIRECTURI;
+const clientId = process.env.SPOTIFY_CLIENTID;
 // const state = 'some-state-of-my-choice';
-const clientSecret = 'b2da3f96d90a4e8aa5595e435ef1e617';
+const clientSecret = process.env.SPOTIFY_CLIENTSECRET;
 
 // Setting credentials can be done in the wrapper's constructor, or using the API object's setters.
 const spotify = new SpotifyWebApi({

@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const mongoDbUri = process.env.MONGODB_URI;
 const Track = require('../api/models/track.model');
 const Beatport = require('./providers/beatport.provider');
 const Traxsource = require('./providers/traxsource.provider');
 
-mongoose.connect('mongodb://localhost/albdb');
+mongoose.connect(mongoDbUri);
 
 const beatport = new Beatport();
 const traxsource = new Traxsource();
