@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nf start web",
     "start:dev": "nf start dev",
-    "debug": "nf run node %NODE_DEBUG_OPTION% server.js",
+    "debug": "node $NODE_DEBUG_OPTION server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
