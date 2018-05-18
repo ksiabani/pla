@@ -85,7 +85,7 @@ class Beatport {
                     const $ = cheerio.load(response.data);
                     const tracks = scenario.parserFn($);
                     meta = [...meta, ...tracks];
-                    console.log(`Running ${scenario.name} (${i} of ${scenario.pagesToFollow})`);
+                    console.log(`Running ${scenario.name} (${i} of ${scenario.pagesToFollow}) from Beatport`);
                     await sleep(10000);
                 }
             }
