@@ -15,25 +15,18 @@ const loginWithSpotify = (req, res) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
 };
 
-const setAccessToken = (req, res) => {
-
-    const code = req.query.code;
-    spotify.authorizationCodeGrant(code).then(
-        function (data) {
-            console.log('The token expires in ' + data.body['expires_in']);
-            console.log('The access token is ' + data.body['access_token']);
-            console.log('The refresh token is ' + data.body['refresh_token']);
-
-            // Set the access token on the API object to use it in later calls
-            spotify.setAccessToken(data.body['access_token']);
-            spotify.setRefreshToken(data.body['refresh_token']);
-            res.redirect('/');
-        },
-        function (err) {
-            console.log('Something went wrong!', err);
-        }
-    );
-
+const setAccessToken = async (req, res) => {
+    try{
+        const code = req.query.code;
+        const response = await spotify.authorizationCodeGrant(code);
+        spotify.setAccessToken(response.body['access_token']);
+        spotify.setRefreshToken(response.body['refresh_token']);
+        const me = await spotify.getMe();
+        res.send(me.body);
+    }
+    catch(error){
+        res.send(error)
+    }
 };
 
 const playlistUris = {
