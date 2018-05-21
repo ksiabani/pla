@@ -16,7 +16,7 @@ const loginWithSpotify = (req, res) => {
 };
 
 const setAccessToken = async (req, res) => {
-    try{
+    try {
         const code = req.query.code;
         const response = await spotify.authorizationCodeGrant(code);
         spotify.setAccessToken(response.body['access_token']);
@@ -24,7 +24,7 @@ const setAccessToken = async (req, res) => {
         const me = await spotify.getMe();
         res.send(me.body);
     }
-    catch(error){
+    catch (error) {
         res.send(error)
     }
 };
@@ -51,10 +51,9 @@ const matcher = async (req, res) => {
         let updated = 0;
         const options = {multi: true};
         for (let item of meta) {
-            // TODO: Is searcher good with commas or should I remove them from artists names
             // TODO: Improve search, some tracks do contain original mix
-            const query = {title: item.title, artist: item.artist};
-            const track = await spotify.searchTracks(`track:${item.title} artist:${item.artist}`, {limit: 1});
+            const query = {title: item.title, artists: item.artists};
+            const track = await spotify.searchTracks(`track:${item.title} artists:${item.artists.join(' ')}`, {limit: 1});
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
@@ -98,6 +97,8 @@ const getPlaylist = async (req, res) => {
 };
 
 const updatePlaylist = async (req, res) => {
+
+    // TODO: Take into account playlists with less than 99 tracks
     try {
         const user = await spotify.getMe();
         const userId = user.body.id;
@@ -127,18 +128,24 @@ const updatePlaylist = async (req, res) => {
         const lastAddedDate = tracks.length && new Date(tracks[tracks.length - 1].added_at) || null; // fastest option
         text += `Last track in playlist was added at ${lastAddedDate}\n`;
 
-        // Find tracks in db since last added date that have been matched (max 99)
+        // Get the tracks to add to the playlist
+        // OLD WAY: Find tracks in db since last added date that have been matched (max 99)
         // These are the tracks we will add in a minute
-
-        // TODO: Change this with updatedAt or else when ready
         // Remember db could be updated for anything
-        const query = lastAddedDate ?
-            {spotify_uri: {$ne: null}, styles: style, createdAt: {"$gt": new Date(lastAddedDate)}} :
-            {spotify_uri: {$ne: null}, styles: style};
-        const recentlyMatchedTracks = await Track.find(query, {}, {lean: true}).exec();
-        const recentlyMatched = recentlyMatchedTracks.splice(0, 99);
-        const recentlyMatchedUris = recentlyMatched.map(track => track.spotify_uri);
-        text += `Since then ${recentlyMatched.length} tracks have been matched.\n`;
+        // const query = lastAddedDate ?
+        //     {spotify_uri: {$ne: null}, styles: style, createdAt: {"$gt": new Date(lastAddedDate)}} :
+        //     {spotify_uri: {$ne: null}, styles: style};
+        // const recentlyMatchedTracks = await Track.find(query, {}, {lean: true}).exec();
+        // const recentlyMatched = recentlyMatchedTracks.splice(0, 99);
+        // const recentlyMatchedUris = recentlyMatched.map(track => track.spotify_uri);
+        // text += `Since then ${recentlyMatched.length} tracks have been matched.\n`;
+
+        // NEW WAY: Find tracks that have been matched and never added to a playlist sorted by createdAt date (most recent first)
+        const query = {spotify_uri: {$ne: null}, lastAddedAt: null, styles: style};
+        const matchedNotAdded = await Track.find(query, {}, {lean: true}).sort({createdAt: 'desc'}).exec();
+        const tracksToAdd = matchedNotAdded.splice(0, 99);
+        const tracksToAddUris = tracksToAdd.map(track => track.spotify_uri);
+        text += `Since then ${matchedNotAdded.length} tracks have been matched.\n`;
 
         // Get the tracks to remove from the playlist
         const tracksToRemoveUris = tracks.slice(0, recentlyMatched.length).map(track => {
@@ -151,9 +158,13 @@ const updatePlaylist = async (req, res) => {
             await spotify.removeTracksFromPlaylist(userId, playlistId, [...tracksToRemoveUris]);
         }
 
-        // Add tracks to playlist
-        if (recentlyMatchedUris && recentlyMatchedUris.length) {
-            await spotify.addTracksToPlaylist(userId, playlistId, [...recentlyMatchedUris]);
+        // Add tracks to playlist, then update lastAddedAt for each track in database
+        if (tracksToAddUris && tracksToAddUris.length) {
+            await spotify.addTracksToPlaylist(userId, playlistId, [...tracksToAddUris]);
+            for (let track of tracksToAdd) {
+                const query = {title: track.title, artists: track.artists, category: track.category};
+                await Track.findOneAndUpdate(query, {lastAddedAt: new Date()});
+            }
         }
 
         res.send(text);
@@ -181,6 +192,7 @@ module.exports = {
 
 // Update playlist:
 // 1. Get current playlist's tracks and sort by date of addition
-// 2. Get recent tracks from that date onwards (max 99)
+// X 2. Get recent tracks from that date onwards (max 99)
+// 2. Get matched tracks for that style that have never been added to a playlist (lastAddedAt is null)
 // 3. Add recent n tracks (max 99)
 // 4. Remove oldest tracks from playlist (max 99)

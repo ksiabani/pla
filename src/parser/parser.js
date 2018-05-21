@@ -20,7 +20,7 @@ const go = async () => {
             const meta = await provider.parser();
             const options = {upsert: true, new: true, setDefaultsOnInsert: true};
             for (let piece of meta) {
-                const query = {title: piece.title, artist: piece.artist, category: piece.category};
+                const query = {title: piece.title, artists: piece.artists, category: piece.category};
                 // TODO: Change this so data is inserted only if not found
                 // findOneAndUpdate will update every document and that prevents
                 // playlist updater to find tracks were recently changed (uri added)

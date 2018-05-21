@@ -3,15 +3,15 @@ const timestamps = require('mongoose-timestamp');
 const Schema = mongoose.Schema;
 
 // TODO: Make unique the combination of uri and category
-// TODO: Add creation and update date
-// UserSchema.plugin(timestamps);
+// TODO: Change spotify_uri to spotifyUri
 
 const trackSchema = new Schema({
     title: { type: String, required: true },
-    artists: { type: Array, required: true }, // TODO: Should be an array of artists, change here then in providers
+    artists: { type: Array, required: true },
     styles: { type: Array, required: true },
     category: { type: String, required: true },
-    spotify_uri: String
+    spotify_uri: String,
+    lastAddedAt: Date
 });
 
 trackSchema.plugin(timestamps);
