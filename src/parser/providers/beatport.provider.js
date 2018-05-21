@@ -11,7 +11,7 @@ const scenarios = [
             return Array.from($('.bucket-item.ec-item.track'), el => {
                 let styles = [];
                 const mainTitle = $(el).data('ec-name');
-                const artist = $(el).data('ec-d1');
+                const artists = $(el).data('ec-d1').split(',');
                 styles.push($(el).data('ec-d3'));
                 if ($(el).data('ec-d4')) {
                     styles.push($(el).data('ec-d4'));
@@ -21,7 +21,7 @@ const scenarios = [
                     remixTitle = ''
                 }
                 const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
-                return {title, artist, styles, category: 'new'};
+                return {title, artists, styles, category: 'new'};
             });
         }
     },
@@ -33,7 +33,7 @@ const scenarios = [
             return Array.from($('.bucket-item.ec-item.track'), el => {
                 let styles = [];
                 const mainTitle = $(el).data('ec-name');
-                const artist = $(el).data('ec-d1');
+                const artists = $(el).data('ec-d1').split(',');
                 styles.push($(el).data('ec-d3'));
                 if ($(el).data('ec-d4')) {
                     styles.push($(el).data('ec-d4'));
@@ -43,7 +43,7 @@ const scenarios = [
                     remixTitle = ''
                 }
                 const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
-                return {title, artist, styles, category: 'new'};
+                return {title, artists, styles, category: 'new'};
             });
         }
     },
@@ -55,7 +55,7 @@ const scenarios = [
             return Array.from($('.bucket-item.ec-item.track'), el => {
                 let styles = [];
                 const mainTitle = $(el).data('ec-name');
-                const artist = $(el).data('ec-d1');
+                const artists = $(el).data('ec-d1').split(',');
                 styles.push($(el).data('ec-d3'));
                 if ($(el).data('ec-d4')) {
                     styles.push($(el).data('ec-d4'));
@@ -65,7 +65,7 @@ const scenarios = [
                     remixTitle = ''
                 }
                 const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
-                return {title, artist, styles, category: 'new'};
+                return {title, artists, styles, category: 'new'};
             });
         }
     }

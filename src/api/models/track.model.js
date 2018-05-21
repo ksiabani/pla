@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 
 const trackSchema = new Schema({
     title: { type: String, required: true },
-    artist: { type: String, required: true }, // TODO: Should be an array of artists, change here then in providers
+    artists: { type: Array, required: true }, // TODO: Should be an array of artists, change here then in providers
     styles: { type: Array, required: true },
     category: { type: String, required: true },
     spotify_uri: String
