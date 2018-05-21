@@ -148,7 +148,7 @@ const updatePlaylist = async (req, res) => {
         text += `Since then ${matchedNotAdded.length} tracks have been matched.\n`;
 
         // Get the tracks to remove from the playlist
-        const tracksToRemoveUris = tracks.slice(0, recentlyMatched.length).map(track => {
+        const tracksToRemoveUris = tracks.slice(0, tracksToAdd.length).map(track => {
             return {uri: track.track.uri}
         });
         text += `${tracksToRemoveUris.length} tracks will be removed from the playlist.\n`;
