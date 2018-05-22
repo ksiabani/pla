@@ -50,7 +50,8 @@ const matcher = async (req, res) => {
         const meta = await Track.find({spotify_uri: null}).exec();
         let updated = 0;
         const options = {multi: true};
-        for (let item of meta) {
+        // Use slice to prevent limit rates
+        for (let item of meta.slice(0, 20)) {
             // TODO: Improve search, some tracks do contain original mix
             const query = {title: item.title, artists: item.artists};
             const track = await spotify.searchTracks(`track:${item.title} artists:${item.artists.join(' ')}`, {limit: 1});
