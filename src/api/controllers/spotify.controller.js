@@ -43,7 +43,10 @@ const matcher = async (req, res) => {
             const track = await spotify.searchTracks(searchPhrase, {limit: 1});
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
-            if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
+            // Let's trust Spotify and not check release date. Also for classics this will not work
+            // TODO: Check if this works
+            // if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
+            if (uri) {
                 const response = await Track.update(query, {spotify_uri: uri}, options);
                 if (response.nModified > 0) {
                     updated += response.nModified;

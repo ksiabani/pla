@@ -4,7 +4,7 @@ const sleep = require('../../utils/sleep');
 
 const scenarios = [
     {
-        name: 'new liquid',
+        name: 'New Liquid',
         url: 'https://www.beatport.com/genre/drum-and-bass/1/tracks?subgenre=5&per-page=150&page=',
         pagesToFollow: 1,
         parserFn: ($) => {
@@ -26,7 +26,7 @@ const scenarios = [
         }
     },
     {
-        name: 'new house',
+        name: 'New House',
         url: 'https://www.beatport.com/genre/house/5/tracks?per-page=150&page=',
         pagesToFollow: 1,
         parserFn: ($) => {
@@ -48,7 +48,7 @@ const scenarios = [
         }
     },
     {
-        name: 'new electronica / downtempo',
+        name: 'New Electronica / Downtempo',
         url: 'https://www.beatport.com/tracks/all?type=Release&per-page=150&genres=3&page=',
         pagesToFollow: 1,
         parserFn: ($) => {
@@ -85,7 +85,7 @@ class Beatport {
                     const $ = cheerio.load(response.data);
                     const tracks = scenario.parserFn($);
                     meta = [...meta, ...tracks];
-                    console.log(`Running ${scenario.name} (${i} of ${scenario.pagesToFollow}) from Beatport`);
+                    console.log(`Running '${scenario.name}' (page ${i} of ${scenario.pagesToFollow}) from Beatport`);
                     await sleep(10000);
                 }
             }
