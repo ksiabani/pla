@@ -69,7 +69,7 @@ const scenarios = [
     {
         name: 'DJ Top 10s Classics',
         url: 'https://www.traxsource.com/genre/13/deep-house/featured?cn=tracks&ipp=100&gf=13&page=',
-        pagesToFollow: 1,
+        pagesToFollow: 4,
         parserFn: ($) => {
             return Array.from($('.trk-row.play-trk'), el => {
                 let styles = [];
