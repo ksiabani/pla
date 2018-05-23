@@ -29,6 +29,8 @@ const setAccessToken = async (req, res) => {
     }
 };
 
+// TODO: Create retromatcher that will pick a 100 random records that have been scanned but not matched
+
 const matcher = async (req, res) => {
     try {
         // Get tracks that don't have a uri, limit to 100 to avoid limit rate
@@ -184,12 +186,5 @@ module.exports = {
 // Playlist rules:
 // * Max no of track is 99
 // * No duplicates
-// * No collections
+// * No VA
 // * When newer tracks are added older tracks are removed
-
-// Update playlist:
-// 1. Get current playlist's tracks and sort by date of addition
-// X 2. Get recent tracks from that date onwards (max 99)
-// 2. Get matched tracks for that style that have never been added to a playlist (lastAddedAt is null)
-// 3. Add recent n tracks (max 99)
-// 4. Remove oldest tracks from playlist (max 99)
