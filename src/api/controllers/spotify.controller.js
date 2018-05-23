@@ -134,10 +134,11 @@ const updater = async (req, res) => {
                 if (tracks.length) {
                     // Get the tracks to remove from the playlist
                     // Tracks to remove = (existing tracks + tracks to add) - max number of playlist tracks
+                    const tracksToRemoveCount = (tracksToAdd.length + tracks.length) - 99;
                     const tracksToRemoveUris =
-                        (tracksToAdd.length + tracks.length) - 99 < 0 ?
+                        tracksToRemoveCount < 0 ?
                             null : // no tracks to remove
-                            tracks.slice(0, tracksToAdd.length).map(track => {
+                            tracks.slice(0, tracksToRemoveCount).map(track => {
                                 return {uri: track.track.uri}
                             });
 
