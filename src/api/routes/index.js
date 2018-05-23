@@ -46,6 +46,9 @@ module.exports = (app) => {
         .get(spotify.getPlaylist)
         .put(spotify.updatePlaylist);
 
+    app.route('/spotify/updater')
+        .get(spotify.updater);
+
     //
     // Track
 
