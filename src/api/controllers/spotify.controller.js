@@ -59,11 +59,13 @@ const matcher = async (req, res) => {
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
-                const response = await Track.update(query, {spotify_uri: uri, lastScannedAt: new Date()}, options);
+                const response = await Track.update(query, {spotify_uri: uri}, options);
                 if (response.nModified > 0) {
                     updated += response.nModified;
                 }
             }
+            // Update last scanned date on each track that a search was performed on
+            await Track.update(query, {lastScannedAt: new Date()}, options);
         }
         res.send(`${updated} tracks were matched`);
 
