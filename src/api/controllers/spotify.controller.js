@@ -46,13 +46,12 @@ const playlistUris = {
 
 const matcher = async (req, res) => {
     try {
-        // Get tracks that don't have a uri
-        const meta = await Track.find({spotify_uri: null},{}, {lean: true}).exec();
+        // Get tracks that don't have a uri, limit to 100 to avoid limit rate
+        const meta = await Track.find({spotify_uri: null, lastScannedAt: null},{}, {lean: true}).limit(100).exec();
         let updated = 0;
         const options = {multi: true};
-        const partial = meta.slice(0, 100);
         // Use slice to prevent limit rates
-        for (let item of partial) {
+        for (let item of meta) {
             // TODO: Improve search, some tracks do contain original mix
             const query = {title: item.title, artists: item.artists};
             const searchPhrase = `track:${item.title} artist:${item.artists.join(' ')}`;
@@ -60,7 +59,7 @@ const matcher = async (req, res) => {
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
-                const response = await Track.update(query, {spotify_uri: uri}, options);
+                const response = await Track.update(query, {spotify_uri: uri, lastScannedAt: new Date()}, options);
                 if (response.nModified > 0) {
                     updated += response.nModified;
                 }

@@ -11,7 +11,8 @@ const trackSchema = new Schema({
     styles: { type: Array, required: true },
     category: { type: String, required: true },
     spotify_uri: String,
-    lastAddedAt: Date
+    lastAddedAt: Date, // last time was added to a playlist
+    lastScannedAt: Date // last time a match was attempted
 });
 
 trackSchema.plugin(timestamps);
