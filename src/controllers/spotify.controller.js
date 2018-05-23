@@ -1,4 +1,4 @@
-const config = require('../../config');
+const config = require('../config/index');
 const spotify = require('../services/spotify.service');
 const Track = require('../models/track.model');
 
@@ -76,18 +76,6 @@ const getUserPlaylists = async (req, res) => {
         res.send(error.message);
     }
 
-};
-
-const getPlaylist = async (req, res) => {
-    try {
-        const user = await spotify.getMe();
-        const playlistId = req.params.playlistId;
-        const response = await spotify.getPlaylist(user.body.id, playlistId);
-        res.send(response.body);
-    }
-    catch (error) {
-        res.send(error.message);
-    }
 };
 
 const updater = async (req, res) => {
@@ -179,7 +167,6 @@ module.exports = {
     getSpotifyMe,
     matcher,
     getUserPlaylists,
-    getPlaylist,
     updater
 };
 

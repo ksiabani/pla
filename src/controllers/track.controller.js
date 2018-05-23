@@ -2,7 +2,7 @@ const Track = require('../models/track.model');
 
 const list = async (req, res) => {
     try {
-        const response = await Track.find({}).exec();
+        const response = await Track.find({spotify_uri: {$ne: null}}).exec();
         res.json(response);
     }
     catch (error) {
