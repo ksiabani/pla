@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const mongoDbUri = process.env.MONGODB_URI;
-const Track = require('../api/models/track.model');
+const Track = require('../models/track.model');
 const Beatport = require('./providers/beatport.provider');
 const Traxsource = require('./providers/traxsource.provider');
 
