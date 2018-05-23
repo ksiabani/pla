@@ -26,6 +26,18 @@ module.exports = {
                     id: '6WlLThhqhYLtivKnlBALC8',
                     style: 'House'
                 },
+                {
+                    id: '4h4N3rxLG99y1jzwCm4nwD',
+                    style: 'Soulful House'
+                },
+                {
+                    id: '5pXeuntjZfQHLHvaNTAm3S',
+                    style: 'Deep House'
+                },
+                {
+                    id: '0YLgYDVwzgIvqgrzprTJlg',
+                    style: 'Classic House'
+                }
             ],
             top: [
                 {
