@@ -47,14 +47,16 @@ const playlistUris = {
 const matcher = async (req, res) => {
     try {
         // Get tracks that don't have a uri
-        const meta = await Track.find({spotify_uri: null}).exec();
+        const meta = await Track.find({spotify_uri: null},{}, {lean: true}).exec();
         let updated = 0;
         const options = {multi: true};
+        const partial = meta.slice(0, 100);
         // Use slice to prevent limit rates
-        for (let item of meta.slice(0, 20)) {
+        for (let item of partial) {
             // TODO: Improve search, some tracks do contain original mix
             const query = {title: item.title, artists: item.artists};
-            const track = await spotify.searchTracks(`track:${item.title} artists:${item.artists.join(' ')}`, {limit: 1});
+            const searchPhrase = `track:${item.title} artist:${item.artists.join(' ')}`;
+            const track = await spotify.searchTracks(searchPhrase, {limit: 1});
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
