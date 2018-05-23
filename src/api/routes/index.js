@@ -42,10 +42,6 @@ module.exports = (app) => {
     app.route('/spotify/playlists')
         .get(spotify.getUserPlaylists);
 
-    app.route('/spotify/playlists/:playlistId')
-        .get(spotify.getPlaylist)
-        .put(spotify.updatePlaylist);
-
     app.route('/spotify/updater')
         .get(spotify.updater);
 
