@@ -2,6 +2,8 @@
 const spotify = require('../controllers/spotify.controller');
 const track = require('../controllers/track.controller');
 const genre = require('../controllers/style.controller');
+const spotifyService = require('../services/spotify.service');
+const Track = require('../models/track.model');
 
 module.exports = (app) => {
 
@@ -29,7 +31,7 @@ module.exports = (app) => {
         .get(spotify.getSpotifyMe);
 
     app.route('/spotify/matcher')
-        .get(spotify.matcher);
+        .get((req, res) =>spotify.matcher(req, res, Track, spotifyService));
 
     app.route('/spotify/playlists')
         .get(spotify.getUserPlaylists);

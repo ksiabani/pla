@@ -9,7 +9,7 @@ const trackSchema = new Schema({
     title: { type: String, required: true },
     artists: { type: Array, required: true },
     styles: { type: Array, required: true },
-    category: { type: String, required: true },
+    category: { type: String, required: true }, // add enumarator
     spotify_uri: String,
     lastAddedAt: Date, // last time was added to a playlist
     lastScannedAt: Date // last time a match was attempted

@@ -31,10 +31,10 @@ const setAccessToken = async (req, res) => {
 
 // TODO: Create retromatcher that will pick a 100 random records that have been scanned but not matched
 
-const matcher = async (req, res) => {
+const matcher = async (req, res, TrackModel, spotifyService) => {
     try {
         // Get tracks that don't have a uri, limit to 100 to avoid limit rate
-        const meta = await Track.find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true}).limit(100).exec();
+        const meta = await TrackModel.find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true}).limit(100).exec();
         let updated = 0;
         const options = {multi: true};
         // Use slice to prevent limit rates
@@ -42,20 +42,20 @@ const matcher = async (req, res) => {
             // TODO: Improve search, some tracks do contain original mix
             const query = {title: item.title, artists: item.artists};
             const searchPhrase = `track:${item.title} artist:${item.artists.join(' ')}`;
-            const track = await spotify.searchTracks(searchPhrase, {limit: 1});
+            const track = await spotifyService.searchTracks(searchPhrase, {limit: 1});
             const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
             const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
             // Let's trust Spotify and not check release date. Also for classics this will not work
             // TODO: Check if this works
             // if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
             if (uri) {
-                const response = await Track.update(query, {spotify_uri: uri}, options);
+                const response = await TrackModel.update(query, {spotify_uri: uri}, options);
                 if (response.nModified > 0) {
                     updated += response.nModified;
                 }
             }
             // Update last scanned date on each track that a search was performed on
-            await Track.update(query, {lastScannedAt: new Date()}, options);
+            await TrackModel.update(query, {lastScannedAt: new Date()}, options);
         }
         res.send(`${updated} tracks were matched`);
 
