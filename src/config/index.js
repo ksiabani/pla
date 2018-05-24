@@ -15,48 +15,48 @@ module.exports = {
         picked: {
             new: [
                 {
-                    id: '1HrrXgJSqdBzJBhk44nByG',
+                    id: '2aLhOn0JkocFaZmyE8ga5N',
                     style: 'Liquid'
                 },
                 {
-                    id: '7uIhCfXZlwnKlH0wMoyFce',
+                    id: '1jh7frVtxCjyComcPUrdDl',
                     style: 'Electronica / Downtempo'
                 },
                 {
-                    id: '6WlLThhqhYLtivKnlBALC8',
+                    id: '2g6feA22aymQmNzZc7XwT2',
                     style: 'House'
                 },
                 {
-                    id: '4h4N3rxLG99y1jzwCm4nwD',
+                    id: '58CF8UapxlC04R9rEtMXfK',
                     style: 'Soulful House'
                 },
                 {
-                    id: '5pXeuntjZfQHLHvaNTAm3S',
+                    id: '6TbywSyebfRybJx3bQN0IJ',
                     style: 'Deep House'
                 },
                 {
-                    id: '0YLgYDVwzgIvqgrzprTJlg',
+                    id: '75wdSDK3cbtlnHMRjzRVAF',
                     style: 'Classic House'
                 }
             ],
             top: [
                 {
-                    id: "6WlLThhqhYLtivKnlBALC8",
-                    style: "House"
+                    id: '',
+                    style: ''
                 }
             ]
         },
         curated: {
             new: [
                 {
-                    id: "6WlLThhqhYLtivKnlBALC8",
-                    style: "House"
+                    id: '',
+                    style: ''
                 }
             ],
             top: [
                 {
-                    id: "6WlLThhqhYLtivKnlBALC8",
-                    style: "House"
+                    id: '',
+                    style: ''
                 }
             ]
         }
