@@ -2,15 +2,6 @@ const config = require('../config/index');
 const spotify = require('../services/spotify.service');
 const Track = require('../models/track.model');
 
-const getSpotifyMe = async (reg, res) => {
-    try {
-        const response = await spotify.getMe();
-        res.json(response.body);
-    } catch (error) {
-        res.send(error.message);
-    }
-};
-
 const loginWithSpotify = (req, res) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
 };
@@ -25,44 +16,18 @@ const setAccessToken = async (req, res) => {
         res.send(me.body);
     }
     catch (error) {
-        res.send(error)
+        console.log(error);
+        res.send(error);
     }
 };
 
-// TODO: Create retromatcher that will pick a 100 random records that have been scanned but not matched
-
-const picker = async (req, res) => {
+const getSpotifyMe = async (reg, res) => {
     try {
-        // Get tracks that don't have a uri, limit to 100 to avoid limit rate
-        const meta = await Track.find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true}).limit(100).exec();
-        let updated = 0;
-        const options = {multi: true};
-        // Use slice to prevent limit rates
-        for (let item of meta) {
-            // TODO: Improve search, some tracks do contain original mix
-            const query = {title: item.title, artists: item.artists};
-            const searchPhrase = `track:${item.title} artist:${item.artists.join(' ')}`;
-            const track = await spotify.searchTracks(searchPhrase, {limit: 1});
-            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
-            const releaseDate = track && track.body.tracks.items[0] && track.body.tracks.items[0].album.release_date.split('-')[0];
-            // Let's trust Spotify and not check release date. Also for classics this will not work
-            // TODO: Check if this works
-            // if (uri && releaseDate && releaseDate >= new Date().getFullYear()) {
-            if (uri) {
-                const response = await Track.update(query, {spotify_uri: uri}, options);
-                if (response.nModified > 0) {
-                    updated += response.nModified;
-                }
-            }
-            // Update last scanned date on each track that a search was performed on
-            await Track.update(query, {lastScannedAt: new Date()}, options);
-        }
-        res.send(`${updated} tracks were matched`);
-
-    }
-    catch (error) {
+        const response = await spotify.getMe();
+        res.json(response.body);
+    } catch (error) {
         console.log(error);
-        res.send(error.message);
+        res.send(error);
     }
 };
 
@@ -73,12 +38,61 @@ const getUserPlaylists = async (req, res) => {
         res.json(response.body);
     }
     catch (error) {
-        res.send(error.message);
+        console.log(error);
+        res.send(error);
     }
 
 };
 
-const updater = async (req, res) => {
+// Uses seeds to search for tracks in Spotify
+const matcher = async (req, res, retro) => {
+    try {
+
+        // Query
+        const query = retro ?
+            // Get 100 random tracks that don't have been scanned but not matched
+            // The idea is that Spotify might have added them since last check
+            Track
+                .aggregate([{$match: {spotify_uri: null, lastScannedAt: {$ne: null}}}])
+                .sample(100) :
+            // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
+            Track
+                .find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true})
+                .limit(100);
+
+        // Get seeds
+        const seeds = await query.exec();
+        let updated = 0;
+
+        // Search in Spotify
+        for (let seed of seeds) {
+            const query = {title: seed.title, artists: seed.artists};
+            const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
+            const track = await spotify.searchTracks(searchPhrase, {limit: 1});
+            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
+
+            // If found update track with URI
+            if (uri) {
+                const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
+                if (response.nModified > 0) {
+                    updated += response.nModified;
+                }
+            }
+
+            // Update last scanned date on each track that a search was performed on
+            await Track.update(query, {lastScannedAt: new Date()}, {multi: true});
+        }
+        res.send(`${updated} tracks were matched`);
+
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
+
+// Adds newly found tracks to picked playlists based on their genre
+const picker = async (req, res) => {
     try {
         let text = '';
         for (let details of config.playlists.picked.new) {
@@ -161,6 +175,7 @@ const updater = async (req, res) => {
     }
 };
 
+// Check for tracks recently added to library, and move them to curated playlists
 const curator = async (req, res) => {
     try {
         let text = '';
@@ -177,7 +192,7 @@ const curator = async (req, res) => {
                     let styles = track.styles;
                     // Special case for Electronica:
                     // We want styles of 'Electronica / Downtempo' or 'Electronica' to end up in the same curated list
-                    if (styles.join( ).includes('Electronica')) {
+                    if (styles.join().includes('Electronica')) {
                         styles = 'Electronica';
                     }
                     for (let details of config.playlists.curated) {
@@ -221,7 +236,7 @@ const getMyRecentlySavedTracks = async () => {
     for (let i = 1; i <= Math.ceil(total / limit); i++) {
         const page = await spotify.getMySavedTracks({
             limit: 50, // max you can ask for
-            offset: (i-1) * 50
+            offset: (i - 1) * 50
         });
         tracks.push(...page.body.items);
     }
@@ -230,19 +245,12 @@ const getMyRecentlySavedTracks = async () => {
     }).map(track => track.track);
 };
 
-
 module.exports = {
     loginWithSpotify,
     setAccessToken,
     getSpotifyMe,
-    picker,
     getUserPlaylists,
-    updater,
+    matcher,
+    picker,
     curator
 };
-
-// Playlist rules:
-// * Max no of track is 99
-// * No duplicates
-// * No VA
-// * When newer tracks are added older tracks are removed

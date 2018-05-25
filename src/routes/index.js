@@ -19,23 +19,26 @@ module.exports = (app) => {
     app.route('/auth/spotify')
         .get(spotify.loginWithSpotify);
 
-    //
-    // Spotify
-
     app.route('/auth/spotify/callback')
         .get(spotify.setAccessToken);
+
+    //
+    // Spotify
 
     app.route('/spotify/me')
         .get(spotify.getSpotifyMe);
 
-    app.route('/spotify/picker')
-        .get(spotify.picker);
-
     app.route('/spotify/playlists')
         .get(spotify.getUserPlaylists);
 
-    app.route('/spotify/updater')
-        .get(spotify.updater);
+    app.route('/spotify/matcher')
+        .get((req, res) => spotify.matcher(req, res, false));
+
+    app.route('/spotify/retromatcher')
+        .get((req, res) => spotify.matcher(req, res, true));
+
+    app.route('/spotify/picker')
+        .get(spotify.picker);
 
     app.route('/spotify/curator')
         .get(spotify.curator);
