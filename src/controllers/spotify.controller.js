@@ -161,13 +161,51 @@ const updater = async (req, res) => {
     }
 };
 
+const curator = async (req, res) => {
+    try {
+        const user = await spotify.getMe();
+        const userId = user.body.id;
+        const tracks = await getMyRecentlySavedTracks();
+        const trackUris = tracks.map(track => track.uri);
+        for (let uri of trackUris) {
+            const style = await Track.find({spotify_uri: uri}, {}).exec();
+            console.log(style);
+        }
+        res.send(trackUris);
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
+
+const getMyRecentlySavedTracks = async () => {
+    const limit = 50;
+    let tracks = [];
+    const response = await spotify.getMySavedTracks();
+    const total = response.body.total;
+    for (let i = 1; i <= Math.ceil(total / limit); i++) {
+        const page = await spotify.getMySavedTracks({
+            limit: 50, // max you can ask for
+            offset: i
+        });
+        tracks.push(...page.body.items);
+    }
+    // return tracks.map(track => track.track);
+    return tracks.filter(track => {
+        return new Date(track.added_at) > new Date(new Date(track.added_at).getTime() - 7 * 24 * 60 * 60 * 1000);
+    }).map(track => track.track);
+};
+
+
 module.exports = {
     loginWithSpotify,
     setAccessToken,
     getSpotifyMe,
     matcher,
     getUserPlaylists,
-    updater
+    updater,
+    curator
 };
 
 // Playlist rules:

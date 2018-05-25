@@ -46,19 +46,17 @@ module.exports = {
                 }
             ]
         },
-        curated: {
-            new: [
-                {
-                    id: '',
-                    style: ''
-                }
-            ],
-            top: [
-                {
-                    id: '',
-                    style: ''
-                }
-            ]
-        }
+        curated: [
+            {
+                id: '',
+                style: ''
+            },
+            {
+                id: '',
+                style: ''
+            }
+        ]
     }
+
+
 };
