@@ -37,6 +37,9 @@ module.exports = (app) => {
     app.route('/spotify/updater')
         .get(spotify.updater);
 
+    app.route('/spotify/curator')
+        .get(spotify.curator);
+
     //
     // API
     //

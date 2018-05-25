@@ -161,13 +161,84 @@ const updater = async (req, res) => {
     }
 };
 
+const curator = async (req, res) => {
+    try {
+        let text = '';
+        let noOfTracks = 0;
+        let curated = [];
+        const user = await spotify.getMe();
+        const userId = user.body.id;
+        const tracks = await getMyRecentlySavedTracks();
+        if (tracks.length) {
+            const trackUris = tracks.map(track => track.uri);
+            for (let uri of trackUris) {
+                const track = await Track.findOne({spotify_uri: uri}, {styles: 1, _id: 0}).exec();
+                if (track && track.styles.length) {
+                    let styles = track.styles;
+                    // Special case for Electronica:
+                    // We want styles of 'Electronica / Downtempo' or 'Electronica' to end up in the same curated list
+                    if (styles.join( ).includes('Electronica')) {
+                        styles = 'Electronica';
+                    }
+                    for (let details of config.playlists.curated) {
+                        if (styles.includes(details.style)) {
+                            const playlistId = details.id;
+                            const playlist = await spotify.getPlaylist(userId, playlistId);
+                            const playlistTrackUris = playlist.body.tracks.items.map(item => item.track.uri);
+                            if (!playlistTrackUris.includes(uri)) { // Track not contained in playlist, go ahead and add it
+                                await spotify.addTracksToPlaylist(userId, playlistId, [uri]);
+                                // Some logging info
+                                ++noOfTracks;
+                                if (!curated.includes(details.style)) {
+                                    curated.push(details.style);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            text = noOfTracks ?
+                `${noOfTracks} of ${tracks.length} tracks were added to ${curated.length} playlists (${curated.join(', ')}).` :
+                `${tracks.length} tracks were found in library. No tracks were added to playlists.`;
+        }
+        else {
+            text = `No tracks were added to library within last week. Go add some.`;
+        }
+        res.send(text);
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
+
+// Return library tracks added within last week
+const getMyRecentlySavedTracks = async () => {
+    const limit = 50;
+    let tracks = [];
+    const response = await spotify.getMySavedTracks();
+    const total = response.body.total;
+    for (let i = 1; i <= Math.ceil(total / limit); i++) {
+        const page = await spotify.getMySavedTracks({
+            limit: 50, // max you can ask for
+            offset: (i-1) * 50
+        });
+        tracks.push(...page.body.items);
+    }
+    return tracks.filter(track => {
+        return new Date(track.added_at) > new Date(new Date(track.added_at).getTime() - 7 * 24 * 60 * 60 * 1000);
+    }).map(track => track.track);
+};
+
+
 module.exports = {
     loginWithSpotify,
     setAccessToken,
     getSpotifyMe,
     matcher,
     getUserPlaylists,
-    updater
+    updater,
+    curator
 };
 
 // Playlist rules:
