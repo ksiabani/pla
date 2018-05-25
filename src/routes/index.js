@@ -1,6 +1,6 @@
 // TODO: Put routes to separate files
 const spotify = require('../controllers/spotify.controller');
-const track = require('../controllers/track.controller');
+// const track = require('../controllers/track.controller');
 const genre = require('../controllers/style.controller');
 const config = require('../config/index');
 const spotifyService = require('../services/spotify.service');
@@ -53,8 +53,8 @@ module.exports = (app) => {
     //
     // Track
 
-    app.route('/api/tracks')
-        .get(track.list);
+    // app.route('/api/tracks')
+    //     .get(track.list);
 
     // app.route('/tracks/:trackId').get(Track.get);
     // app.route('/tracks').post(Track.post);

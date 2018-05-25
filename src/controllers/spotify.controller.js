@@ -45,19 +45,18 @@ const matcher = async (req, res, spotify, Track, retro) => {
     try {
 
         // Query
-        const query = retro ?
-            // Get 100 random tracks that don't have been scanned but not matched
-            // The idea is that Spotify might have added them since last check
-            Track
-                .aggregate([{$match: {spotify_uri: null, lastScannedAt: {$ne: null}}}])
-                .sample(100) :
-            // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
-            Track
-                .find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true})
-                .limit(100);
+        // const query = retro ?
+        //     // Get 100 random tracks that don't have been scanned but not matched
+        //     // The idea is that Spotify might have added them since last check
+        //     Track.getRandomScannedNotMatched() :
+        //     // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
+        //     Track.getNotScanned();
 
         // Get seeds
-        const seeds = await query.exec();
+        // const seeds = await query.exec();
+
+        const seeds = retro ? await Track.getRandomScannedNotMatched() : await Track.getNotScanned();
+
         let updated = 0;
 
         // Search in Spotify
