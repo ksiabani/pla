@@ -1,12 +1,8 @@
-const config = require('../config/index');
-const spotify = require('../services/spotify.service');
-const Track = require('../models/track.model');
-
-const loginWithSpotify = (req, res) => {
+const loginWithSpotify = (req, res, config, spotify) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
 };
 
-const setAccessToken = async (req, res) => {
+const setAccessToken = async (req, res, spotify) => {
     try {
         const code = req.query.code;
         const response = await spotify.authorizationCodeGrant(code);
@@ -21,7 +17,7 @@ const setAccessToken = async (req, res) => {
     }
 };
 
-const getSpotifyMe = async (reg, res) => {
+const getSpotifyMe = async (reg, res, spotify) => {
     try {
         const response = await spotify.getMe();
         res.json(response.body);
@@ -31,7 +27,7 @@ const getSpotifyMe = async (reg, res) => {
     }
 };
 
-const getUserPlaylists = async (req, res) => {
+const getUserPlaylists = async (req, res, spotify) => {
     try {
         const user = await spotify.getMe();
         const response = await spotify.getUserPlaylists(user.body.id);
@@ -45,7 +41,7 @@ const getUserPlaylists = async (req, res) => {
 };
 
 // Uses seeds to search for tracks in Spotify
-const matcher = async (req, res, retro) => {
+const matcher = async (req, res, spotify, Track, retro) => {
     try {
 
         // Query
@@ -82,7 +78,7 @@ const matcher = async (req, res, retro) => {
             // Update last scanned date on each track that a search was performed on
             await Track.update(query, {lastScannedAt: new Date()}, {multi: true});
         }
-        res.send(`${updated} tracks were matched`);
+        res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
 
     }
     catch (error) {
@@ -92,7 +88,7 @@ const matcher = async (req, res, retro) => {
 };
 
 // Adds newly found tracks to picked playlists based on their genre
-const picker = async (req, res) => {
+const picker = async (req, res, config, spotify, Track) => {
     try {
         let text = '';
         for (let details of config.playlists.picked.new) {
@@ -176,14 +172,14 @@ const picker = async (req, res) => {
 };
 
 // Check for tracks recently added to library, and move them to curated playlists
-const curator = async (req, res) => {
+const curator = async (req, res, config, spotify, Track) => {
     try {
         let text = '';
         let noOfTracks = 0;
         let curated = [];
         const user = await spotify.getMe();
         const userId = user.body.id;
-        const tracks = await getMyRecentlySavedTracks();
+        const tracks = await getMyRecentlySavedTracks(spotify);
         if (tracks.length) {
             const trackUris = tracks.map(track => track.uri);
             for (let uri of trackUris) {
@@ -228,7 +224,7 @@ const curator = async (req, res) => {
 };
 
 // Return library tracks added within last week
-const getMyRecentlySavedTracks = async () => {
+const getMyRecentlySavedTracks = async spotify => {
     const limit = 50;
     let tracks = [];
     const response = await spotify.getMySavedTracks();
