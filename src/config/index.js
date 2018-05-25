@@ -48,12 +48,24 @@ module.exports = {
         },
         curated: [
             {
-                id: '',
-                style: ''
+                id: '1Hj1QtsZwvxwlPR5X6NkSO',
+                style: 'Liquid'
             },
             {
-                id: '',
-                style: ''
+                id: '6jlZblskzXbyc0SrSJeTxy',
+                style: 'Electronica'
+            },
+            {
+                id: '3GVwh0CpfWwakVnHxI9Re7',
+                style: 'House'
+            },
+            {
+                id: '39oW5sbiK20EWjAnn7hMQe',
+                style: 'Soulful House'
+            },
+            {
+                id: '4Y8tU2LbYE9EPBZGjOpWHg',
+                style: 'Deep House'
             }
         ]
     }
