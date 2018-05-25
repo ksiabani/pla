@@ -25,28 +25,30 @@ const scenarios = [
             });
         }
     },
-    {
-        name: 'New House',
-        url: 'https://www.beatport.com/genre/house/5/tracks?per-page=150&page=',
-        pagesToFollow: 1,
-        parserFn: ($) => {
-            return Array.from($('.bucket-item.ec-item.track'), el => {
-                let styles = [];
-                const mainTitle = $(el).data('ec-name');
-                const artists = $(el).data('ec-d1').split(',');
-                styles.push($(el).data('ec-d3'));
-                if ($(el).data('ec-d4')) {
-                    styles.push($(el).data('ec-d4'));
-                }
-                let remixTitle = $(el).find('.buk-track-remixed').text();
-                if (remixTitle.toLowerCase() === 'original mix') {
-                    remixTitle = ''
-                }
-                const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
-                return {title, artists, styles, category: 'new'};
-            });
-        }
-    },
+    // Terrible scenario due to bad quality of collections featuring old stuff
+    // Commenting out for now, will replace with a new scenario soon...
+    // {
+    //     name: 'New House',
+    //     url: 'https://www.beatport.com/genre/house/5/tracks?per-page=150&page=',
+    //     pagesToFollow: 1,
+    //     parserFn: ($) => {
+    //         return Array.from($('.bucket-item.ec-item.track'), el => {
+    //             let styles = [];
+    //             const mainTitle = $(el).data('ec-name');
+    //             const artists = $(el).data('ec-d1').split(',');
+    //             styles.push($(el).data('ec-d3'));
+    //             if ($(el).data('ec-d4')) {
+    //                 styles.push($(el).data('ec-d4'));
+    //             }
+    //             let remixTitle = $(el).find('.buk-track-remixed').text();
+    //             if (remixTitle.toLowerCase() === 'original mix') {
+    //                 remixTitle = ''
+    //             }
+    //             const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
+    //             return {title, artists, styles, category: 'new'};
+    //         });
+    //     }
+    // },
     {
         name: 'New Electronica / Downtempo',
         url: 'https://www.beatport.com/tracks/all?type=Release&per-page=150&genres=3&page=',
