@@ -28,8 +28,8 @@ module.exports = (app) => {
     app.route('/spotify/me')
         .get(spotify.getSpotifyMe);
 
-    app.route('/spotify/matcher')
-        .get(spotify.matcher);
+    app.route('/spotify/picker')
+        .get(spotify.picker);
 
     app.route('/spotify/playlists')
         .get(spotify.getUserPlaylists);

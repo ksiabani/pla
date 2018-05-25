@@ -31,7 +31,7 @@ const setAccessToken = async (req, res) => {
 
 // TODO: Create retromatcher that will pick a 100 random records that have been scanned but not matched
 
-const matcher = async (req, res) => {
+const picker = async (req, res) => {
     try {
         // Get tracks that don't have a uri, limit to 100 to avoid limit rate
         const meta = await Track.find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true}).limit(100).exec();
@@ -235,7 +235,7 @@ module.exports = {
     loginWithSpotify,
     setAccessToken,
     getSpotifyMe,
-    matcher,
+    picker,
     getUserPlaylists,
     updater,
     curator
