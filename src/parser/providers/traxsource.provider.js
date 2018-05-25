@@ -67,6 +67,27 @@ const scenarios = [
         }
     },
     {
+        name: 'Featured House',
+        url: 'https://www.traxsource.com/genre/4/house/featured?cn=tracks&ipp=100&gf=4&page=',
+        pagesToFollow: 1,
+        parserFn: ($) => {
+            return Array.from($('.trk-row.play-trk'), el => {
+                let styles = [];
+                const mainTitle = $(el).find('.trk-cell.title a').text();
+                let remixTitle = $(el).find('.trk-cell.title .version').clone().children().remove().end().text().replace(/\r?\n|\r/, '').trim();
+                // TODO: This will return comma separated values, remove join if you want back an array
+                const artists = Array.from($(el).find('.trk-cell.artists').find('.com-artists')).map(artist => $(artist).text());
+                const genre = $(el).find('.trk-cell.genre a').text();
+                if (remixTitle.toLowerCase() === 'original mix') {
+                    remixTitle = ''
+                }
+                const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
+                styles.push(genre);
+                return {title, artists, styles, category: 'new'};
+            });
+        }
+    },
+    {
         name: 'DJ Top 10s Classics',
         url: 'https://www.traxsource.com/genre/12/classic-house/djtop?cn=tracks&gf=12&ipp=100&page=',
         pagesToFollow: 1,
