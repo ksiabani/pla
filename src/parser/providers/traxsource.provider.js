@@ -1,6 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const sleep = require('../../utils/sleep');
+const sleepRand = require('../../utils/sleepRand');
 
 const scenarios = [
     {
@@ -125,7 +125,7 @@ class Traxsource {
                     const tracks = scenario.parserFn($);
                     meta = [...meta, ...tracks];
                     console.log(`Running '${scenario.name}' (page ${i} of ${scenario.pagesToFollow}) from Traxsource`);
-                    await sleep(10000);
+                    await sleepRand(6, 14);
                 }
             }
             return meta;
