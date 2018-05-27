@@ -64,13 +64,19 @@ const matcher = async (req, res, spotify, Track, retro) => {
             const query = {title: seed.title, artists: seed.artists};
             const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
             const track = await spotify.searchTracks(searchPhrase, {limit: 1});
-            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
 
-            // If found update track with URI
-            if (uri) {
-                const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
-                if (response.nModified > 0) {
-                    updated += response.nModified;
+            // If we get the right response, get the track's URI
+            if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
+                const uri = track.body.tracks.items[0].uri;
+
+                // If track's release date is within a month, go ahead and save the track in db
+                const releaseDate = track.body.tracks.items[0].album.release_date;
+                const testDate = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+                if (new Date(releaseDate) > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000)) {
+                    const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
+                    if (response.nModified > 0) {
+                        updated += response.nModified;
+                    }
                 }
             }
 
@@ -236,7 +242,7 @@ const getMyRecentlySavedTracks = async spotify => {
         tracks.push(...page.body.items);
     }
     return tracks.filter(track => {
-        return new Date(track.added_at) > new Date(new Date(track.added_at).getTime() - 7 * 24 * 60 * 60 * 1000);
+        return new Date(track.added_at) > new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
     }).map(track => track.track);
 };
 
