@@ -1,7 +1,10 @@
 // TODO: Put routes to separate files
 const spotify = require('../controllers/spotify.controller');
-const track = require('../controllers/track.controller');
+// const track = require('../controllers/track.controller');
 const genre = require('../controllers/style.controller');
+const config = require('../config/index');
+const spotifyService = require('../services/spotify.service');
+const Track = require('../models/track.model');
 
 module.exports = (app) => {
 
@@ -17,31 +20,31 @@ module.exports = (app) => {
     // Auth
 
     app.route('/auth/spotify')
-        .get(spotify.loginWithSpotify);
+        .get((req, res) => spotify.loginWithSpotify(req, res, config, spotifyService));
 
     app.route('/auth/spotify/callback')
-        .get(spotify.setAccessToken);
+        .get((req, res) => spotify.setAccessToken(req, res, spotifyService));
 
     //
     // Spotify
 
     app.route('/spotify/me')
-        .get(spotify.getSpotifyMe);
+        .get((req, res) => spotify.getSpotifyMe(req, res, spotifyService));
 
     app.route('/spotify/playlists')
-        .get(spotify.getUserPlaylists);
+        .get((req, res) => spotify.getUserPlaylists(req, res, spotifyService));
 
     app.route('/spotify/matcher')
-        .get((req, res) => spotify.matcher(req, res, false));
+        .get((req, res) => spotify.matcher(req, res, spotifyService, Track, false));
 
     app.route('/spotify/retromatcher')
-        .get((req, res) => spotify.matcher(req, res, true));
+        .get((req, res) => spotify.matcher(req, res, spotifyService, Track, true));
 
     app.route('/spotify/picker')
-        .get(spotify.picker);
+        .get((req, res) => spotify.picker(req, res, config, spotifyService, Track));
 
     app.route('/spotify/curator')
-        .get(spotify.curator);
+        .get((req, res) => spotify.curator(req, res, config, spotifyService, Track));
 
     //
     // API
@@ -50,8 +53,8 @@ module.exports = (app) => {
     //
     // Track
 
-    app.route('/api/tracks')
-        .get(track.list);
+    // app.route('/api/tracks')
+    //     .get(track.list);
 
     // app.route('/tracks/:trackId').get(Track.get);
     // app.route('/tracks').post(Track.post);

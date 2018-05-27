@@ -1,12 +1,8 @@
-const config = require('../config/index');
-const spotify = require('../services/spotify.service');
-const Track = require('../models/track.model');
-
-const loginWithSpotify = (req, res) => {
+const loginWithSpotify = (req, res, config, spotify) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
 };
 
-const setAccessToken = async (req, res) => {
+const setAccessToken = async (req, res, spotify) => {
     try {
         const code = req.query.code;
         const response = await spotify.authorizationCodeGrant(code);
@@ -21,7 +17,7 @@ const setAccessToken = async (req, res) => {
     }
 };
 
-const getSpotifyMe = async (reg, res) => {
+const getSpotifyMe = async (reg, res, spotify) => {
     try {
         const response = await spotify.getMe();
         res.json(response.body);
@@ -31,7 +27,7 @@ const getSpotifyMe = async (reg, res) => {
     }
 };
 
-const getUserPlaylists = async (req, res) => {
+const getUserPlaylists = async (req, res, spotify) => {
     try {
         const user = await spotify.getMe();
         const response = await spotify.getUserPlaylists(user.body.id);
@@ -45,23 +41,22 @@ const getUserPlaylists = async (req, res) => {
 };
 
 // Uses seeds to search for tracks in Spotify
-const matcher = async (req, res, retro) => {
+const matcher = async (req, res, spotify, Track, retro) => {
     try {
 
         // Query
-        const query = retro ?
-            // Get 100 random tracks that don't have been scanned but not matched
-            // The idea is that Spotify might have added them since last check
-            Track
-                .aggregate([{$match: {spotify_uri: null, lastScannedAt: {$ne: null}}}])
-                .sample(100) :
-            // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
-            Track
-                .find({spotify_uri: null, lastScannedAt: null}, {}, {lean: true})
-                .limit(100);
+        // const query = retro ?
+        //     // Get 100 random tracks that don't have been scanned but not matched
+        //     // The idea is that Spotify might have added them since last check
+        //     Track.getRandomScannedNotMatched() :
+        //     // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
+        //     Track.getNotScanned();
 
         // Get seeds
-        const seeds = await query.exec();
+        // const seeds = await query.exec();
+
+        const seeds = retro ? await Track.getRandomScannedNotMatched() : await Track.getNotScanned();
+
         let updated = 0;
 
         // Search in Spotify
@@ -69,20 +64,26 @@ const matcher = async (req, res, retro) => {
             const query = {title: seed.title, artists: seed.artists};
             const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
             const track = await spotify.searchTracks(searchPhrase, {limit: 1});
-            const uri = track && track.body.tracks.items[0] && track.body.tracks.items[0].uri;
 
-            // If found update track with URI
-            if (uri) {
-                const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
-                if (response.nModified > 0) {
-                    updated += response.nModified;
+            // If we get the right response, get the track's URI
+            if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
+                const uri = track.body.tracks.items[0].uri;
+
+                // If track's release date is within a month, go ahead and save the track in db
+                const releaseDate = track.body.tracks.items[0].album.release_date;
+                const testDate = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+                if (new Date(releaseDate) > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000)) {
+                    const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
+                    if (response.nModified > 0) {
+                        updated += response.nModified;
+                    }
                 }
             }
 
             // Update last scanned date on each track that a search was performed on
             await Track.update(query, {lastScannedAt: new Date()}, {multi: true});
         }
-        res.send(`${updated} tracks were matched`);
+        res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
 
     }
     catch (error) {
@@ -92,7 +93,7 @@ const matcher = async (req, res, retro) => {
 };
 
 // Adds newly found tracks to picked playlists based on their genre
-const picker = async (req, res) => {
+const picker = async (req, res, config, spotify, Track) => {
     try {
         let text = '';
         for (let details of config.playlists.picked.new) {
@@ -176,14 +177,14 @@ const picker = async (req, res) => {
 };
 
 // Check for tracks recently added to library, and move them to curated playlists
-const curator = async (req, res) => {
+const curator = async (req, res, config, spotify, Track) => {
     try {
         let text = '';
         let noOfTracks = 0;
         let curated = [];
         const user = await spotify.getMe();
         const userId = user.body.id;
-        const tracks = await getMyRecentlySavedTracks();
+        const tracks = await getMyRecentlySavedTracks(spotify);
         if (tracks.length) {
             const trackUris = tracks.map(track => track.uri);
             for (let uri of trackUris) {
@@ -228,7 +229,7 @@ const curator = async (req, res) => {
 };
 
 // Return library tracks added within last week
-const getMyRecentlySavedTracks = async () => {
+const getMyRecentlySavedTracks = async spotify => {
     const limit = 50;
     let tracks = [];
     const response = await spotify.getMySavedTracks();
@@ -241,7 +242,7 @@ const getMyRecentlySavedTracks = async () => {
         tracks.push(...page.body.items);
     }
     return tracks.filter(track => {
-        return new Date(track.added_at) > new Date(new Date(track.added_at).getTime() - 7 * 24 * 60 * 60 * 1000);
+        return new Date(track.added_at) > new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
     }).map(track => track.track);
 };
 
