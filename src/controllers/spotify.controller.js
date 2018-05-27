@@ -70,9 +70,10 @@ const matcher = async (req, res, spotify, Track, retro) => {
                 const uri = track.body.tracks.items[0].uri;
 
                 // If track's release date is within a month, go ahead and save the track in db
+                // Exception is when style is Classic House where release date is irrelevant
                 const releaseDate = track.body.tracks.items[0].album.release_date;
-                const testDate = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
-                if (new Date(releaseDate) > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000)) {
+                const oneMonthBackFromNow = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+                if (new Date(releaseDate) > oneMonthBackFromNow || seed.styles.includes('Classic House') ) {
                     const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
                     if (response.nModified > 0) {
                         updated += response.nModified;
