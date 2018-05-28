@@ -81,6 +81,34 @@ const scenarios = [
                 });
             }
         }
+    },
+    {
+        name: 'Featured Tech House',
+        url: 'https://www.beatport.com/genre/tech-house/11',
+        parserFn: ($) => {
+            return Array.from($('.bucket-item.ec-item.release'), el => {
+                return $(el).find('.release-artwork-parent').attr('href');
+            });
+        },
+        scenarioToFollow: {
+            parserFn: ($) => {
+                return Array.from($('.bucket-item.ec-item.track'), el => {
+                    let styles = [];
+                    const mainTitle = $(el).data('ec-name');
+                    const artists = $(el).data('ec-d1').split(',');
+                    styles.push($(el).data('ec-d3'));
+                    if ($(el).data('ec-d4')) {
+                        styles.push($(el).data('ec-d4'));
+                    }
+                    let remixTitle = $(el).find('.buk-track-remixed').text();
+                    if (remixTitle.toLowerCase() === 'original mix') {
+                        remixTitle = ''
+                    }
+                    const title = remixTitle ? `${mainTitle} ${remixTitle}` : mainTitle;
+                    return {title, artists, styles, category: 'new'};
+                });
+            }
+        }
     }
 ];
 
