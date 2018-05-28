@@ -37,6 +37,10 @@ module.exports = {
                 {
                     id: '75wdSDK3cbtlnHMRjzRVAF',
                     style: 'Classic House'
+                },
+                {
+                    id: '2rLyFbwxMKQYa90XfGPmU8',
+                    style: 'Tech House'
                 }
             ],
             top: [
@@ -66,6 +70,10 @@ module.exports = {
             {
                 id: '4Y8tU2LbYE9EPBZGjOpWHg',
                 style: 'Deep House'
+            },
+            {
+                id: '6KK27YQHL3nnNgJDXlwpFK',
+                style: 'Tech House'
             }
         ]
     }
