@@ -125,7 +125,7 @@ class Traxsource {
                     const tracks = scenario.parserFn($);
                     meta = [...meta, ...tracks];
                     console.log(`Running '${scenario.name}' (page ${i} of ${scenario.pagesToFollow}) from Traxsource`);
-                    await sleepRand(6, 14);
+                    await sleepRand(10, 14); // Traxsource's min is 10 secs
                 }
             }
             return meta;
