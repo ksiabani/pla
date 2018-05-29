@@ -46,20 +46,13 @@ const getUserPlaylists = async (req, res, spotify) => {
 // Uses seeds to search for tracks in Spotify
 const matcher = async (req, res, spotify, Track, retro) => {
     try {
-
-        // Query
-        // const query = retro ?
-        //     // Get 100 random tracks that don't have been scanned but not matched
-        //     // The idea is that Spotify might have added them since last check
-        //     Track.getRandomScannedNotMatched() :
-        //     // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
-        //     Track.getNotScanned();
-
         // Get seeds
-        // const seeds = await query.exec();
-
+        // If retro
+        // Get 100 random tracks that don't have been scanned but not matched
+        // The idea is that Spotify might have added them since last check
+        // Or
+        // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
         const seeds = retro ? await Track.getRandomScannedNotMatched() : await Track.getNotScanned();
-
         let updated = 0;
 
         // Search in Spotify
@@ -295,6 +288,14 @@ const updater = async (req, res, spotify, Track) => {
     }
 };
 
+const hiliter = async (req, res) => {
+    // Get tracks that are stored in certain playlists (Featured playlists)
+    // For each track, find the album, get all the tracks and add all in a playlist in db
+};
+
+const lister = async (req, res) => {
+    // copy curated playlists from Spotify to db
+};
 
 // Return library tracks added within last week
 const getMyRecentlySavedTracks = async spotify => {
