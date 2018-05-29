@@ -1,15 +1,50 @@
-const Track = require('../models/track.model');
-
-const list = async (req, res) => {
+const getTracks = async (req, res, Track) => {
     try {
-        const response = await Track.find({spotify_uri: {$ne: null}}).exec();
+        const response = await Track.getTracks();
         res.json(response);
     }
     catch (error) {
+        console.log(error);
         res.send(error);
     }
+};
 
+const getTrack = async (req, res, Track) => {
+    try {
+        const trackId = req.params.trackId;
+        const response = await Track.getTrack(trackId);
+        res.json(response);
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
 
+const getNewTracks = async (req, res, Track) => {
+    try {
+        const styles = req.query.styles.split(',');
+        const options = {styles};
+        const response = await Track.getNewTracks(options);
+        res.json(response);
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
+
+const getTopTracks = async (req, res, Track) => {
+    try {
+        const styles = req.query.styles.split(',');
+        const options = {styles};
+        const response = await Track.getTopTracks(options);
+        res.json(response);
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
 };
 
 // // retrieve a specific user using the user id (in our case, the user from the jwt)
@@ -95,5 +130,8 @@ const list = async (req, res) => {
 // };
 
 module.exports = {
-    list
+    getTracks,
+    getTrack,
+    getNewTracks,
+    getTopTracks
 };

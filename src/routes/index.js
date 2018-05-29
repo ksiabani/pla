@@ -1,6 +1,6 @@
 // TODO: Put routes to separate files
 const spotify = require('../controllers/spotify.controller');
-// const track = require('../controllers/track.controller');
+const track = require('../controllers/track.controller');
 const genre = require('../controllers/style.controller');
 const config = require('../config/index');
 const spotifyService = require('../services/spotify.service');
@@ -46,6 +46,9 @@ module.exports = (app) => {
     app.route('/spotify/curator')
         .get((req, res) => spotify.curator(req, res, config, spotifyService, Track));
 
+    app.route('/spotify/updater')
+        .get((req, res) => spotify.updater(req, res, spotifyService, Track));
+
     //
     // API
     //
@@ -53,8 +56,11 @@ module.exports = (app) => {
     //
     // Track
 
-    // app.route('/api/tracks')
-    //     .get(track.list);
+    app.route('/api/tracks')
+        .get((req, res) => track.getTracks(req, res, Track));
+
+    app.route('/api/tracks/:trackId')
+        .get((req, res) => track.getTrack(req, res, Track));
 
     // app.route('/tracks/:trackId').get(Track.get);
     // app.route('/tracks').post(Track.post);
@@ -71,6 +77,15 @@ module.exports = (app) => {
     // app.route('/api/styles/:styleId/tracks')
     //     .get(genre.tracks);
 
+
+    //
+    // Browse
+
+    app.route('/api/browse/new-tracks')
+        .get((req, res) => track.getNewTracks(req, res, Track));
+
+    app.route('/api/browse/top-tracks')
+        .get((req, res) => track.getTopTracks(req, res, Track));
 
     //
     // 404

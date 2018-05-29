@@ -1,3 +1,6 @@
+const selectn = require('selectn');
+const sleep = require('../utils/sleep');
+
 const loginWithSpotify = (req, res, config, spotify) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
 };
@@ -78,7 +81,10 @@ const matcher = async (req, res, spotify, Track, retro) => {
                 const oneMonthBackFromNow = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
                 if ((new Date(releaseDate) > oneMonthBackFromNow && albumArtists !== 'Various Artists')
                     || seed.styles.includes('Classic House')) {
-                    const response = await Track.update(query, {spotify_uri: uri}, {multi: true});
+                    const response = await Track.update(query, {
+                        spotify_uri: uri,
+                        releaseDate: new Date(releaseDate)
+                    }, {multi: true}); // multi true, track may belong to more than one categories
                     if (response.nModified > 0) {
                         updated += response.nModified;
                     }
@@ -86,7 +92,7 @@ const matcher = async (req, res, spotify, Track, retro) => {
             }
 
             // Update last scanned date on each track that a search was performed on
-            await Track.update(query, {lastScannedAt: new Date()}, {multi: true});
+            await Track.update(query, {lastScannedAt: new Date()}, {multi: true}); // multi true, track may belong to more than one categories
         }
         res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
 
@@ -233,6 +239,63 @@ const curator = async (req, res, config, spotify, Track) => {
     }
 };
 
+// It will update information in database from information retrieved from Spotify.
+// It will fail of no or the wrong type is given,
+// It will do nothing if non existing field_to is given.
+// It will not check if a wrong field is given.
+// It will only run against tracks in database that have already been found in Spotify (spotify_uri not null)
+// and only against records where the field in question is null or not there at all.
+const updater = async (req, res, spotify, Track) => {
+    try {
+
+        const fieldFrom = req.query.field_from;
+        const fieldTo = req.query.field_to; //releaseDate
+        const fieldType = req.query.field_type; //Date
+        const seeds = await Track.getTracksToUpdate(fieldTo); //will return all records where this field is null
+        const limit = 50;
+        let updated = 0;
+
+        for (let i = 1; i <= Math.ceil(seeds.length / limit); i++) {
+            const start = (i - 1) * 50;
+            const end = start + 50;
+            const trackIds = seeds.slice(start, end).map(seed => seed.spotify_uri.substring(14));
+            const tracks = await spotify.getTracks([...trackIds]);
+            for (let track of tracks.body.tracks) {
+
+                // The update object that we pass to Mongoose
+                let update = {};
+                update[fieldTo] = fieldType === 'Date' ? new Date(selectn(fieldFrom, track)) :
+                    fieldType === 'Boolean' || fieldType === 'String' ?
+                        track[fieldFrom] : null;
+
+                const foo = update[fieldTo];
+
+                if (update[fieldTo]) {
+                    const response = await Track.update({
+                            spotify_uri: track.uri
+                        },
+                        update,
+                        {multi: true}); // multi true, track may belong to more than one categories
+                    if (response.nModified > 0) {
+                        updated += response.nModified;
+                    }
+                }
+                else {
+                    updated = -1;
+                }
+            }
+            sleep(1);
+        }
+        res.send(`${updated < 0 ? 'Couldn\'t update.' : updated + ' tracks were updated.'}`);
+
+    }
+    catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+};
+
+
 // Return library tracks added within last week
 const getMyRecentlySavedTracks = async spotify => {
     const limit = 50;
@@ -258,5 +321,6 @@ module.exports = {
     getUserPlaylists,
     matcher,
     picker,
-    curator
+    curator,
+    updater
 };
