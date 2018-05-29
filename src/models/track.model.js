@@ -54,8 +54,8 @@ trackSchema.statics.getTracks = function () {
                 $ne: null
             }
         })
-        .limit(100)
         .sort({releaseDate: -1})
+        .limit(100)
         .exec();
 };
 
@@ -88,8 +88,12 @@ trackSchema.statics.getNewTracks = function (options) {
             spotify_uri: {
                 $ne: null
             },
+            releaseDate: {
+                $ne: null
+            },
             styles: { $in: options.styles }
         })
+        .sort({releaseDate: -1})
         .limit(100)
         .exec();
 };
@@ -104,8 +108,12 @@ trackSchema.statics.getTopTracks = function () {
             spotify_uri: {
                 $ne: null
             },
+            releaseDate: {
+                $ne: null
+            },
             styles: { $in: options.styles }
         })
+        .sort({releaseDate: -1})
         .limit(100)
         .exec();
 };
