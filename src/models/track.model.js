@@ -12,7 +12,8 @@ const trackSchema = new Schema({
     category: {type: String, required: true},
     spotify_uri: String,
     lastAddedAt: Date, // last time was added to a playlist
-    lastScannedAt: Date // last time a match was attempted
+    lastScannedAt: Date, // last time a match was attempted,
+    releaseDate: Date // release date of the track's album from Spotify
 });
 
 // Randomly get a 100 tracks that were previously searched for, but not found on Spotify
@@ -43,8 +44,8 @@ trackSchema.statics.getNotScanned = function () {
         .exec();
 };
 
-// Get all tracks that have been found on Spotify
-// TODO: limit results, add pagination
+// Get all tracks that have been found on Spotify (with limit)
+// TODO: add pagination
 // TODO: Sort by release date
 trackSchema.statics.getTracks = function () {
     return this.model('Track')
@@ -53,6 +54,19 @@ trackSchema.statics.getTracks = function () {
                 $ne: null
             }
         })
+        .limit(100)
+        .sort({releaseDate: -1})
+        .exec();
+};
+
+// Get all tracks that have been found on Spotify (spotify_uri not null) and given field is null (or not there).
+// Returns all records (no limit)
+trackSchema.statics.getTracksToUpdate = function (field) {
+    let query = {};
+    query['spotify_uri'] = {$ne: null};
+    query[field] = null;
+    return this.model('Track')
+        .find(query)
         .exec();
 };
 
@@ -76,6 +90,7 @@ trackSchema.statics.getNewTracks = function (options) {
             },
             styles: { $in: options.styles }
         })
+        .limit(100)
         .exec();
 };
 
@@ -91,6 +106,7 @@ trackSchema.statics.getTopTracks = function () {
             },
             styles: { $in: options.styles }
         })
+        .limit(100)
         .exec();
 };
 
