@@ -3,9 +3,9 @@ const mongoDbUri = process.env.MONGODB_URI;
 
 module.exports = {
     mongoose,
-    connect: () => {
+    connect: (mongoDbTestUri) => {
         mongoose.Promise = Promise;
-        mongoose.connect(mongoDbUri);
+        mongoose.connect(mongoDbUri || mongoDbTestUri);
     },
     disconnect: (done) => {
         mongoose.disconnect(done);

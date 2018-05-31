@@ -1,5 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
+const db = require('../services/db.service');
+const spotifyCtrl = require('../controllers/spotify.controller');
 
 describe('Test the root path', () => {
     test('It should response the GET method', async () => {
@@ -15,14 +17,22 @@ describe('Test the root path with supertest', () => {
 });
 
 // http://www.albertgao.xyz/2017/05/24/how-to-test-expressjs-with-jest-and-supertest/
-// describe('Test the addLike method', () => {
-//     beforeAll(() => {
-//         mongoDB.connect();
-//     });
-//     afterAll((done) => {
-//         mongoDB.disconnect(done);
-//     });
-// });
+describe('Test the addLike method', () => {
+    const mongoDbTestUri = 'mongodb://localhost:27017/albdb';
+    beforeAll(() => {
+        db.connect(mongoDbTestUri);
+    });
+
+
+    test('It should response the GET method', async () => {
+        const response = await request(app).get('/');
+        expect(response.statusCode).toBe(200);
+    });
+
+    afterAll((done) => {
+        db.disconnect(done);
+    });
+});
 
 
 // const server = require('../server');
