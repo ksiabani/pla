@@ -1,13 +1,7 @@
 const mongoose = require('mongoose');
-const mongoDbUri = process.env.MONGODB_URI;
 
-module.exports = {
+module.exports = mongodbUri => ({
     mongoose,
-    connect: (mongoDbTestUri) => {
-        mongoose.Promise = Promise;
-        mongoose.connect(mongoDbUri || mongoDbTestUri);
-    },
-    disconnect: (done) => {
-        mongoose.disconnect(done);
-    },
-};
+    connect: () => mongoose.connect(mongodbUri),
+    disconnect: done => mongoose.disconnect(done)
+});

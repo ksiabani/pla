@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const db = require('../services/db.service');
+const mongodbUri = 'mongodb://localhost:27017/albdb';
+const db = require('../services/db.service')(mongodbUri);
 const spotifyCtrl = require('../controllers/spotify.controller');
 
 describe('Test the root path', () => {
@@ -18,9 +19,8 @@ describe('Test the root path with supertest', () => {
 
 // http://www.albertgao.xyz/2017/05/24/how-to-test-expressjs-with-jest-and-supertest/
 describe('Test the addLike method', () => {
-    const mongoDbTestUri = 'mongodb://localhost:27017/albdb';
-    beforeAll(() => {
-        db.connect(mongoDbTestUri);
+    beforeEach(() => {
+        db.connect();
     });
 
 
@@ -29,7 +29,7 @@ describe('Test the addLike method', () => {
         expect(response.statusCode).toBe(200);
     });
 
-    afterAll((done) => {
+    afterEach((done) => {
         db.disconnect(done);
     });
 });

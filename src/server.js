@@ -1,6 +1,7 @@
 const port = process.env.PORT || 5000;
 const app = require('./app');
-const db = require('./services/db.service');
+const mongodbUri = process.env.MONGODB_URI;
+const db = require('./services/db.service')(mongodbUri);
 
 async function go() {
     try {

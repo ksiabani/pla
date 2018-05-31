@@ -44,8 +44,9 @@ const getUserPlaylists = async (req, res, spotify) => {
 };
 
 // Uses seeds to search for tracks in Spotify
-const matcher = async (req, res, spotify, Track, retro) => {
+const matcher = async (req, res, spotify, Track, db, retro) => {
     try {
+        const conn = await db.connect();
         // Get seeds
         // If retro
         // Get 100 random tracks that don't have been scanned but not matched
@@ -86,6 +87,7 @@ const matcher = async (req, res, spotify, Track, retro) => {
 
             // Update last scanned date on each track that a search was performed on
             await Track.update(query, {lastScannedAt: new Date()}, {multi: true}); // multi true, track may belong to more than one categories
+            const disc = await db.disconnect();
         }
         res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
 

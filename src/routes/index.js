@@ -5,6 +5,8 @@ const genre = require('../controllers/style.controller');
 const config = require('../config/index');
 const spotifyService = require('../services/spotify.service');
 const Track = require('../models/track.model');
+const mongodbUri = process.env.MONGODB_URI;
+const db = require('../services/db.service')(mongodbUri);
 
 module.exports = (app) => {
 
@@ -35,7 +37,7 @@ module.exports = (app) => {
         .get((req, res) => spotify.getUserPlaylists(req, res, spotifyService));
 
     app.route('/spotify/matcher')
-        .get((req, res) => spotify.matcher(req, res, spotifyService, Track, false));
+        .get((req, res) => spotify.matcher(req, res, spotifyService, Track, db, false));
 
     app.route('/spotify/retromatcher')
         .get((req, res) => spotify.matcher(req, res, spotifyService, Track, true));
