@@ -1,7 +1,8 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const mongodbUri = 'mongodb://localhost:27017/test';
-const db = require('../services/db.service')(mongodbUri);
+// TODO: Change this
+const mongodbTstUri = process.env.MONGODB_TESTURI || 'mongodb://localhost:27017/test';
+const db = require('../services/db.service')(mongodbTstUri);
 const spotifyCtrl = require('../controllers/spotify.controller');
 
 describe('Test the root path', () => {
