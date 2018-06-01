@@ -46,7 +46,6 @@ trackSchema.statics.getNotScanned = function () {
 
 // Get all tracks that have been found on Spotify (with limit)
 // TODO: add pagination
-// TODO: Sort by release date
 trackSchema.statics.getTracks = function () {
     return this.model('Track')
         .find({
