@@ -1,2 +1,2 @@
-web: node server.js
-dev: nodemon server.js
+web: node ./src/server.js
+dev: nodemon ./src/server.js
