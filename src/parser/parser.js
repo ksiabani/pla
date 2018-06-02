@@ -1,10 +1,8 @@
-const mongoose = require('mongoose');
-const mongoDbUri = process.env.MONGODB_URI;
 const Track = require('../models/track.model');
 const Beatport = require('./providers/beatport.provider');
 const Traxsource = require('./providers/traxsource.provider');
-
-mongoose.connect(mongoDbUri);
+const mongodbUri = process.env.MONGODB_URI;
+const db = require('../services/db.service')(mongodbUri);
 
 const beatport = new Beatport();
 const traxsource = new Traxsource();
@@ -16,6 +14,8 @@ const providers = [
 
 const go = async () => {
     try {
+        await db.connect();
+        console.log(`Connected to Mongo.`);
         for (let provider of providers) {
             const meta = await provider.parser();
             const options = {upsert: true, new: true, setDefaultsOnInsert: true};
