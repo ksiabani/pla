@@ -6,7 +6,7 @@
     "MONGODB_URI": {
       "required": true
     },
-    "NODE_ENV": {
+    "MONGODB_TSTURI": {
       "required": true
     },
     "SPOTIFY_CLIENTID": {

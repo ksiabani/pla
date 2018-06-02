@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
 // TODO: Change this
-const mongodbTstUri = process.env.MONGODB_TSTURI || 'mongodb://localhost:27017/tst';
+const mongodbTstUri = process.env.MONGODB_TSTURI;
 const db = require('../services/db.service')(mongodbTstUri);
 
 describe('Test the root path', () => {
