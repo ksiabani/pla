@@ -46,12 +46,13 @@ const getUserPlaylists = async (req, res, spotify) => {
 // Uses seeds to search for tracks in Spotify
 const matcher = async (req, res, spotify, Track, retro) => {
     try {
-        // Get seeds
-        // If retro
-        // Get 100 random tracks that don't have been scanned but not matched
-        // The idea is that Spotify might have added them since last check
-        // Or
-        // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
+        /** Get seeds
+         * If retro:
+         * Get 100 random tracks that don't have been scanned but not matched
+         * The idea is that Spotify might have added them since last check
+         * Or:
+         * Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
+         **/
         const seeds = retro ? await Track.getRandomScannedNotMatched() : await Track.getNotScanned();
         let updated = 0;
 
@@ -232,12 +233,13 @@ const curator = async (req, res, config, spotify, Track) => {
     }
 };
 
-// It will update information in database from information retrieved from Spotify.
-// It will fail of no or the wrong type is given,
-// It will do nothing if non existing field_to is given.
-// It will not check if a wrong field is given.
-// It will only run against tracks in database that have already been found in Spotify (spotify_uri not null)
-// and only against records where the field in question is null or not there at all.
+/** It will update information in database from information retrieved from Spotify.
+ * It will fail if no or the wrong type is given,
+ * It will do nothing if non existing field_to is given.
+ * It will not check if a wrong field is given.
+ * It will only run against tracks in database that have already been found in Spotify (spotify_uri not null)
+ * and only against records where the field in question is null or not there at all.
+ **/
 const updater = async (req, res, spotify, Track) => {
     try {
 
@@ -261,8 +263,6 @@ const updater = async (req, res, spotify, Track) => {
                     fieldType === 'Boolean' || fieldType === 'String' ?
                         track[fieldFrom] : null;
 
-                const foo = update[fieldTo];
-
                 if (update[fieldTo]) {
                     const response = await Track.update({
                             spotify_uri: track.uri
@@ -277,6 +277,7 @@ const updater = async (req, res, spotify, Track) => {
                     updated = -1;
                 }
             }
+            // Waiting for a while will help to avoid rate limits
             sleep(1);
         }
         res.send(`${updated < 0 ? 'Couldn\'t update.' : updated + ' tracks were updated.'}`);
