@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "start": "nf start web",
-    "start:dev": "nf start dev",
     "test": "jest"
   },
   "author": "",
