@@ -21,7 +21,7 @@ const go = async () => {
             const options = {upsert: true, new: true, setDefaultsOnInsert: true};
             for (let piece of meta) {
                 const query = {title: piece.title, artists: piece.artists, category: piece.category};
-                // TODO: Revise findOneAndUpdate? Works fine but no real need to update anything here
+                // TODO: Revise findOneAndUpdate? Works fine but this will update every record
                 // Is there other way to insert if not found?
                 // TODO: Return count of new records added
                 await Track.findOneAndUpdate(query, {styles: piece.styles}, options);
