@@ -2,23 +2,6 @@
   "name": "pla",
   "scripts": {
   },
-  "env": {
-    "MONGODB_URI": {
-      "required": true
-    },
-    "NODE_ENV": {
-      "required": true
-    },
-    "SPOTIFY_CLIENTID": {
-      "required": true
-    },
-    "SPOTIFY_CLIENTSECRET": {
-      "required": true
-    },
-    "SPOTIFY_REDIRECTURI": {
-      "required": true
-    }
-  },
   "formation": {
     "dev": {
       "quantity": 1
