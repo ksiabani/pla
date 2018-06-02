@@ -16,8 +16,8 @@ const trackSchema = new Schema({
     releaseDate: Date // release date of the track's album from Spotify
 });
 
-// Randomly get a 100 tracks that were previously searched for, but not found on Spotify
-trackSchema.statics.getRandomScannedNotMatched = function () {
+// Randomly get n tracks that were previously searched for, but not found on Spotify
+trackSchema.statics.getRandomScannedNotMatched = function (n) {
     return this.model('Track')
         .aggregate([
             {
@@ -29,18 +29,18 @@ trackSchema.statics.getRandomScannedNotMatched = function () {
                 }
             }
         ])
-        .sample(100)
+        .sample(n)
         .exec();
 };
 
-// Get tracks that have not been searched for on Spotify, limit to a 100 to avoid rate limiting
-trackSchema.statics.getNotScanned = function () {
+// Get tracks that have not been searched for on Spotify, limit to n to avoid rate limiting
+trackSchema.statics.getNotScanned = function (n) {
     return this.model('Track')
         .find({
             spotify_uri: null,
             lastScannedAt: null
         }, {}, {lean: true})
-        .limit(100)
+        .limit(n)
         .exec();
 };
 

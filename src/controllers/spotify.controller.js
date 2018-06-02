@@ -46,38 +46,27 @@ const getUserPlaylists = async (req, res, spotify) => {
 // Uses seeds to search for tracks in Spotify
 const matcher = async (req, res, spotify, Track, retro) => {
     try {
-        // Get seeds
-        // If retro
-        // Get 100 random tracks that don't have been scanned but not matched
-        // The idea is that Spotify might have added them since last check
-        // Or
-        // Get tracks that don't have a Spotify URI, limit to 100 to avoid limit rate
-        const seeds = retro ? await Track.getRandomScannedNotMatched() : await Track.getNotScanned();
+        const seeds = retro ? await Track.getRandomScannedNotMatched(100) : await Track.getNotScanned(100);
         let updated = 0;
 
         // Search in Spotify
         for (let seed of seeds) {
             const query = {title: seed.title, artists: seed.artists};
+            const options = {multi: true};
             const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
             const track = await spotify.searchTracks(searchPhrase, {limit: 1});
 
-            // If we get the right response, get the track's URI
             if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
                 const uri = track.body.tracks.items[0].uri;
-
-                // Save track in db if:
-                // * track's release date is within a month
-                // * artists of the album is not 'Various Artists'.
-                // Exception is when style is Classic House where release date is irrelevant.
                 const releaseDate = track.body.tracks.items[0].album.release_date;
                 const albumArtists = track.body.tracks.items[0].album.artists[0].name;
                 const oneMonthBackFromNow = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+                const update = {spotify_uri: uri, releaseDate: new Date(releaseDate)};
+
+                // Save track if it's recent, not in a VA album and not Classic House
                 if ((new Date(releaseDate) > oneMonthBackFromNow && albumArtists !== 'Various Artists')
                     || seed.styles.includes('Classic House')) {
-                    const response = await Track.update(query, {
-                        spotify_uri: uri,
-                        releaseDate: new Date(releaseDate)
-                    }, {multi: true}); // multi true, track may belong to more than one categories
+                    const response = await Track.update(query, update, options);
                     if (response.nModified > 0) {
                         updated += response.nModified;
                     }
@@ -85,7 +74,8 @@ const matcher = async (req, res, spotify, Track, retro) => {
             }
 
             // Update last scanned date on each track that a search was performed on
-            await Track.update(query, {lastScannedAt: new Date()}, {multi: true}); // multi true, track may belong to more than one categories
+            const update = {lastScannedAt: new Date()};
+            await Track.update(query, update, options);
         }
         res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
 
@@ -232,12 +222,13 @@ const curator = async (req, res, config, spotify, Track) => {
     }
 };
 
-// It will update information in database from information retrieved from Spotify.
-// It will fail of no or the wrong type is given,
-// It will do nothing if non existing field_to is given.
-// It will not check if a wrong field is given.
-// It will only run against tracks in database that have already been found in Spotify (spotify_uri not null)
-// and only against records where the field in question is null or not there at all.
+/** It will update information in database from information retrieved from Spotify.
+ * It will fail if no or the wrong type is given,
+ * It will do nothing if non existing field_to is given.
+ * It will not check if a wrong field is given.
+ * It will only run against tracks in database that have already been found in Spotify (spotify_uri not null)
+ * and only against records where the field in question is null or not there at all.
+ **/
 const updater = async (req, res, spotify, Track) => {
     try {
 
@@ -261,8 +252,6 @@ const updater = async (req, res, spotify, Track) => {
                     fieldType === 'Boolean' || fieldType === 'String' ?
                         track[fieldFrom] : null;
 
-                const foo = update[fieldTo];
-
                 if (update[fieldTo]) {
                     const response = await Track.update({
                             spotify_uri: track.uri
@@ -277,6 +266,7 @@ const updater = async (req, res, spotify, Track) => {
                     updated = -1;
                 }
             }
+            // Waiting for a while will help to avoid rate limits
             sleep(1);
         }
         res.send(`${updated < 0 ? 'Couldn\'t update.' : updated + ' tracks were updated.'}`);
