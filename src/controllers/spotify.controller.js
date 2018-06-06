@@ -1,6 +1,5 @@
 const selectn = require('selectn');
 const sleep = require('../utils/sleep');
-const spotify = require('../services/spotify.service');
 
 const loginWithSpotify = (req, res, config, spotify) => {
     res.redirect(spotify.createAuthorizeURL(config.spotify.scopes));
@@ -45,12 +44,13 @@ const getUserPlaylists = async (req, res, spotify) => {
 };
 
 // Uses seeds to search for tracks in Spotify
-const matcher = async (req, res, Track, retro) => {
+const matcher = async (req, res, spotify, Track, retro) => {
     try {
         let updated = 0;
+        const noOfSeeds = 100;
         const seeds = retro ?
-            await Track.getRandomScannedNotMatched(100) :
-            await Track.getNotScanned(100);
+            await Track.getRandomScannedNotMatched(noOfSeeds) :
+            await Track.getNotScanned(noOfSeeds);
         for (let seed of seeds) {
             const track = await searchTrackOnSpotify(spotify, seed);
             const query = {title: seed.title, artists: seed.artists};
@@ -274,6 +274,14 @@ const lister = async (req, res) => {
     // copy curated playlists from Spotify to db
 };
 
+const cleaner = async (req, res) => {
+    // Delete from db tracks that have been removed from playlists
+    // For each playlist:
+    // Search for tracks that have been added to a playlist (lastAdded) later than
+    // the oldest track in the playlist but are not currently in the playlist
+    // These are the tracks to delete from db
+};
+
 // Return library tracks added within last week
 const getMyRecentlySavedTracks = async spotify => {
     const limit = 50;
@@ -295,8 +303,6 @@ const getMyRecentlySavedTracks = async spotify => {
 const searchTrackOnSpotify = async (spotify, seed) => {
     const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
     const track = await spotify.searchTracks(searchPhrase, {limit: 1});
-
-    console.log(track);
     if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
         const uri = track.body.tracks.items[0].uri;
         const albumArtists = track.body.tracks.items[0].album.artists[0].name;
