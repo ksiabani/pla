@@ -13,11 +13,12 @@
     "axios": "0.18.0",
     "cheerio": "1.0.0-rc.2",
     "express": "4.16.3",
-    "foreman": "2.0.0",
+    "foreman": "3.0.0",
+    "mockingoose": "2.10.1",
     "mongoose": "5.0.17",
     "mongoose-timestamp": "0.6.0",
     "selectn": "1.1.2",
-    "spotify-web-api-node": "3.1.0"
+    "spotify-web-api-node": "3.1.1"
   },
   "devDependencies": {
     "jest": "22.4.4",

@@ -24,6 +24,8 @@ const go = async () => {
                 // TODO: Revise findOneAndUpdate? Works fine but this will update every record
                 // Is there other way to insert if not found?
                 // TODO: Return count of new records added
+                // TODO: You must provide for the case where the same track is found in different providers
+                // with different style. if leave it as it is the last track will override styles (maybe its OK?)
                 await Track.findOneAndUpdate(query, {styles: piece.styles}, options);
             }
             console.log(`Done parsing ${meta.length} titles from ${provider.constructor.name}`);

@@ -46,39 +46,26 @@ const getUserPlaylists = async (req, res, spotify) => {
 // Uses seeds to search for tracks in Spotify
 const matcher = async (req, res, spotify, Track, retro) => {
     try {
-        const seeds = retro ? await Track.getRandomScannedNotMatched(100) : await Track.getNotScanned(100);
         let updated = 0;
-
-        // Search in Spotify
+        const noOfSeeds = 100;
+        const seeds = retro ?
+            await Track.getRandomScannedNotMatched(noOfSeeds) :
+            await Track.getNotScanned(noOfSeeds);
         for (let seed of seeds) {
+            const track = await searchTrackOnSpotify(spotify, seed);
             const query = {title: seed.title, artists: seed.artists};
-            const options = {multi: true};
-            const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
-            const track = await spotify.searchTracks(searchPhrase, {limit: 1});
-
-            if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
-                const uri = track.body.tracks.items[0].uri;
-                const releaseDate = track.body.tracks.items[0].album.release_date;
-                const albumArtists = track.body.tracks.items[0].album.artists[0].name;
-                const oneMonthBackFromNow = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
-                const update = {spotify_uri: uri, releaseDate: new Date(releaseDate)};
-
-                // Save track if it's recent, not in a VA album and not Classic House
-                if ((new Date(releaseDate) > oneMonthBackFromNow && albumArtists !== 'Various Artists')
-                    || seed.styles.includes('Classic House')) {
-                    const response = await Track.update(query, update, options);
-                    if (response.nModified > 0) {
-                        updated += response.nModified;
-                    }
-                }
+            const update = {
+                spotify_uri: track && track.uri || null,
+                releaseDate: track && new Date(track.releaseDate) || null,
+                lastScannedAt: new Date()
+            };
+            const options = {multi: true}; // cause the same track can exist in multiple categories
+            const response = await Track.update(query, update, options);
+            if (response.nModified > 0) {
+                updated += response.nModified;
             }
-
-            // Update last scanned date on each track that a search was performed on
-            const update = {lastScannedAt: new Date()};
-            await Track.update(query, update, options);
         }
         res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
-
     }
     catch (error) {
         console.log(error);
@@ -287,6 +274,14 @@ const lister = async (req, res) => {
     // copy curated playlists from Spotify to db
 };
 
+const cleaner = async (req, res) => {
+    // Delete from db tracks that have been removed from playlists
+    // For each playlist:
+    // Search for tracks that have been added to a playlist (lastAdded) later than
+    // the oldest track in the playlist but are not currently in the playlist
+    // These are the tracks to delete from db
+};
+
 // Return library tracks added within last week
 const getMyRecentlySavedTracks = async spotify => {
     const limit = 50;
@@ -303,6 +298,23 @@ const getMyRecentlySavedTracks = async spotify => {
     return tracks.filter(track => {
         return new Date(track.added_at) > new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
     }).map(track => track.track);
+};
+
+const searchTrackOnSpotify = async (spotify, seed) => {
+    const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
+    const track = await spotify.searchTracks(searchPhrase, {limit: 1});
+    if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
+        const uri = track.body.tracks.items[0].uri;
+        const albumArtists = track.body.tracks.items[0].album.artists[0].name;
+        const releaseDate = track.body.tracks.items[0].album.release_date;
+        // One month old or less
+        const isRecent = new Date(releaseDate) > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+        // Return track details if it's recent, not in a VA album and not Classic House
+        if ((isRecent && albumArtists !== 'Various Artists')
+            || seed.styles.includes('Classic House')) {
+            return {uri, releaseDate};
+        }
+    }
 };
 
 module.exports = {
