@@ -26,6 +26,10 @@ const go = async () => {
                 // TODO: Return count of new records added
                 // TODO: You must provide for the case where the same track is found in different providers
                 // with different style. if leave it as it is the last track will override styles (maybe its OK?)
+                // TODO: Duplicates are found in playlists, do you check if this track already exists before inserting
+                // Example tracks to check this:
+                // https://line-in.spotify.com/track/65rdVZ2yUKVAwlMm2TXzm2
+                // https://line-in.spotify.com/entity/spotify:track:6ycufHNIKNWQopzF45nrmF
                 await Track.findOneAndUpdate(query, {styles: piece.styles}, options);
             }
             console.log(`Done parsing ${meta.length} titles from ${provider.constructor.name}`);
