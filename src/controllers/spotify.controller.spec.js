@@ -37,9 +37,9 @@ describe('Spotify controller', () => {
     const res = {send: () => null};
     const Track = {};
     const spotify = {};
-    let retro;
 
-    const mock = {
+    let retro;
+    let mock = {
         spotify: {
             trackFound: {
                 body: {
@@ -87,18 +87,27 @@ describe('Spotify controller', () => {
 
     describe('Matcher', () => {
 
-        // Mock Track model's methods
-        Track.getNotScanned = jest.fn().mockResolvedValue(mock.db.tracks);
-        Track.getRandomScannedNotMatched = jest.fn().mockResolvedValue(mock.db.tracks);
-        Track.update = jest.fn().mockResolvedValue({nModified: null});
+        beforeAll(()=>{
+            // Mock Track model's methods
+            Track.getNotScanned = jest.fn().mockResolvedValue(mock.db.tracks);
+            Track.getRandomScannedNotMatched = jest.fn().mockResolvedValue(mock.db.tracks);
+            Track.update = jest.fn().mockResolvedValue({nModified: null});
 
-        // Mock Spotify methods
-        spotify.searchTracks = jest.fn().mockResolvedValue(mock.spotify.trackFound);
+            // Mock Spotify methods
+            // spotify.searchTracks = jest.fn().mockResolvedValue(mock.spotify.trackFound);
+        });
 
-        test('should find a track on Spotify and update the database', async () => {
+        beforeEach(()=>{
+            Track.getNotScanned = jest.fn().mockReset();
+            Track.getRandomScannedNotMatched = jest.fn().mockReset();
+            // Track.update = jest.fn().mockReset();
+            // spotify.searchTracks = jest.fn().mockReset();
+            // jest.restoreAllMocks()
+        });
 
-            // Precondition
-            retro = false;
+
+
+        test('should fetch a track that has not been searched for yet', async () => {
 
             // Call the controller
             await spotifyCtrl.matcher(req, res, spotify, Track, retro);
@@ -106,8 +115,39 @@ describe('Spotify controller', () => {
             // Assertions
             expect(Track.getNotScanned).toHaveBeenCalled();
             expect(Track.getRandomScannedNotMatched).not.toHaveBeenCalled();
-            expect(spotify.searchTracks).toHaveBeenCalled();
+        });
+
+        // test('should search a track on Spotify', async () => {
+        //
+        //     // Call the controller
+        //     await spotifyCtrl.matcher(req, res, spotify, Track, retro);
+        //
+        //     // Assertions
+        //     expect(spotify.searchTracks).toHaveBeenCalled();
+        //     //expect(Track.update).toHaveBeenCalled();
+        // });
+
+        test('should update track on db', async () => {
+
+
+            // Call the controller
+            await spotifyCtrl.matcher(req, res, spotify, Track, retro);
+
+            // Assertions
             expect(Track.update).toHaveBeenCalled();
+        });
+
+        test('should fetch a track that has been searched for, but not found yet', async () => {
+
+            // Precondition
+            retro = true;
+
+            // Call the controller
+            await spotifyCtrl.matcher(req, res, spotify, Track, retro);
+
+            // Assertions
+            expect(Track.getNotScanned).not.toHaveBeenCalled();
+            expect(Track.getRandomScannedNotMatched).toHaveBeenCalled();
         });
 
     });

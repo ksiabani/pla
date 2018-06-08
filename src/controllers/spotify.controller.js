@@ -44,7 +44,7 @@ const getUserPlaylists = async (req, res, spotify) => {
 };
 
 // Uses seeds to search for tracks in Spotify
-const matcher = async (req, res, spotify, Track, retro) => {
+const matcher = async (req, res, spotify, Track, retro = false) => {
     try {
         let updated = 0;
         const noOfSeeds = 100;
