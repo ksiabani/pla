@@ -61,7 +61,7 @@ const matcher = async (req, res, spotify, Track, retro = false) => {
             };
             const options = {multi: true}; // cause the same track can exist in multiple categories
             const response = await Track.update(query, update, options);
-            if (response.nModified > 0) {
+            if (track && response.nModified > 0) { //TODO: Test this also
                 updated += response.nModified;
             }
         }
