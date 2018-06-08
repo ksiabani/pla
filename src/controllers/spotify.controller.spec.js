@@ -87,25 +87,15 @@ describe('Spotify controller', () => {
 
     describe('Matcher', () => {
 
-        beforeAll(()=>{
+        beforeEach(()=>{
             // Mock Track model's methods
             Track.getNotScanned = jest.fn().mockResolvedValue(mock.db.tracks);
             Track.getRandomScannedNotMatched = jest.fn().mockResolvedValue(mock.db.tracks);
             Track.update = jest.fn().mockResolvedValue({nModified: null});
 
             // Mock Spotify methods
-            // spotify.searchTracks = jest.fn().mockResolvedValue(mock.spotify.trackFound);
+            spotify.searchTracks = jest.fn().mockResolvedValue(mock.spotify.trackFound);
         });
-
-        beforeEach(()=>{
-            Track.getNotScanned = jest.fn().mockReset();
-            Track.getRandomScannedNotMatched = jest.fn().mockReset();
-            // Track.update = jest.fn().mockReset();
-            // spotify.searchTracks = jest.fn().mockReset();
-            // jest.restoreAllMocks()
-        });
-
-
 
         test('should fetch a track that has not been searched for yet', async () => {
 
@@ -117,18 +107,17 @@ describe('Spotify controller', () => {
             expect(Track.getRandomScannedNotMatched).not.toHaveBeenCalled();
         });
 
-        // test('should search a track on Spotify', async () => {
-        //
-        //     // Call the controller
-        //     await spotifyCtrl.matcher(req, res, spotify, Track, retro);
-        //
-        //     // Assertions
-        //     expect(spotify.searchTracks).toHaveBeenCalled();
-        //     //expect(Track.update).toHaveBeenCalled();
-        // });
+
+        test('should search a track on Spotify', async () => {
+
+            // Call the controller
+            await spotifyCtrl.matcher(req, res, spotify, Track, retro);
+
+            // Assertions
+            expect(spotify.searchTracks).toHaveBeenCalled();
+        });
 
         test('should update track on db', async () => {
-
 
             // Call the controller
             await spotifyCtrl.matcher(req, res, spotify, Track, retro);
