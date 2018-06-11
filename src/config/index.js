@@ -41,6 +41,10 @@ module.exports = {
                 {
                     id: '2rLyFbwxMKQYa90XfGPmU8',
                     style: 'Tech House'
+                },
+                {
+                    id: '4loyLRCoEKESc0YQRbvLZe',
+                    style: 'Lounge / Chill Out'
                 }
             ],
             top: [

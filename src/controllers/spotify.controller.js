@@ -65,7 +65,7 @@ const matcher = async (req, res, spotify, Track, retro = false) => {
                 updated += response.nModified;
             }
         }
-        res.send(`${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
+        res.send(`${seeds.length} were retrieved from db. ${updated} tracks were ${retro ? 'retro-' : ''}matched.`);
     }
     catch (error) {
         console.log(error);
