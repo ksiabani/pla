@@ -310,6 +310,9 @@ const searchTrackOnSpotify = async (spotify, seed) => {
         // One month old or less
         const isRecent = new Date(releaseDate) > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
         // Return track details if it's recent, not in a VA album and not Classic House
+        // TODO: Add constraints:
+        // Artist is not Sam Divine
+        // Album name does not contain Defected Radio (e.g. Defected Radio Episode 103 (hosted by Sam Divine))
         if ((isRecent && albumArtists !== 'Various Artists')
             || seed.styles.includes('Classic House')) {
             return {uri, releaseDate};
