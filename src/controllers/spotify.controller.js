@@ -301,7 +301,7 @@ const getMyRecentlySavedTracks = async spotify => {
 };
 
 const searchTrackOnSpotify = async (spotify, seed) => {
-    const searchPhrase = `track:${seed.title} artist:${seed.artists.join(' ')}`;
+    const searchPhrase = `track:${seed.title.replace(/\+/g,'')} artist:${seed.artists.join(' ')}`;
     const track = await spotify.searchTracks(searchPhrase, {limit: 1});
     if (track && track.body && track.body.tracks && track.body.tracks.items.length) {
         const uri = track.body.tracks.items[0].uri;
