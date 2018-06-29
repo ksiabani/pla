@@ -30,6 +30,17 @@ const go = async () => {
                 // Example tracks to check this:
                 // https://line-in.spotify.com/track/65rdVZ2yUKVAwlMm2TXzm2
                 // https://line-in.spotify.com/entity/spotify:track:6ycufHNIKNWQopzF45nrmF
+                // A possible cause: The case of Feel Good by Maribou State:
+                // https://line-in.spotify.com/track/5EhyJGUafXNnPniaIQnSER
+                // So Maribou State had a single out that have to verions of the same track. The two versions are:
+                // 1 Feel Good (feat. Khruangbin) - Edit 3:38
+                // 2 Feel Good (feat. Khruangbin) 4:27
+                // The two tracks on Beatport are like this:
+                // https://www.beatport.com/release/feel-good-feat-khruangbin/2313834
+                // 1. Feel Good (feat. Khruangbin) feat. Khruangbin
+                // 2. Feel Good (feat. Khruangbin) feat. Khruangbin
+                // So they have the same name and maybe that's the reason. I have to make sure that I check if
+                // the track already exists
                 await Track.findOneAndUpdate(query, {styles: piece.styles}, options);
             }
             console.log(`Done parsing ${meta.length} titles from ${provider.constructor.name}`);
